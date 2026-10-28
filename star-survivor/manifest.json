@@ -1,0 +1,17 @@
+{
+  "name": "스타더스트 서바이버",
+  "short_name": "스타더스트",
+  "description": "우주에서 10분간 살아남는 자동 공격 서바이벌 게임",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#070b1f",
+  "theme_color": "#070b1f",
+  "lang": "ko",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
