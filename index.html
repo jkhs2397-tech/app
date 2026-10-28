@@ -2,486 +2,526 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>내 단어장</title>
-<meta name="theme-color" content="#4f46e5">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>HOPE 랩 키우기</title>
+<meta name="theme-color" content="#0f766e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="내 단어장">
+<meta name="apple-mobile-web-app-title" content="HOPE 랩">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
 <style>
 :root{
-  --bg:#f5f5fa; --card:#fff; --text:#1b1b25; --sub:#6b6b7b; --line:#e4e4ee;
-  --pri:#4f46e5; --pri-t:#fff; --ok:#16a34a; --ng:#dc2626; --okbg:#dcfce7; --ngbg:#fee2e2;
+  --bg:#eef7f6; --card:#fff; --text:#13232b; --sub:#5f7480; --line:#d6e6e4;
+  --pri:#0f766e; --pri-t:#fff; --acc:#f59e0b; --ok:#16a34a; --scene1:#e0f2f1; --scene2:#b2dfdb; --bench:#8d6e63;
 }
 @media (prefers-color-scheme:dark){
-  :root{ --bg:#101018; --card:#1b1b27; --text:#f1f1f7; --sub:#9a9ab0; --line:#2c2c3d;
-    --pri:#818cf8; --pri-t:#101018; --ok:#4ade80; --ng:#f87171; --okbg:#14391f; --ngbg:#4a1c1c; }
+  :root{ --bg:#0b1416; --card:#13222a; --text:#e8f3f2; --sub:#8fa8b3; --line:#223943;
+    --pri:#2dd4bf; --pri-t:#062b27; --acc:#fbbf24; --ok:#4ade80; --scene1:#16313a; --scene2:#1d434c; --bench:#6d4c41; }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-  padding-top:env(safe-area-inset-top)}
-#app{max-width:640px;margin:0 auto;padding:16px 16px calc(84px + env(safe-area-inset-bottom))}
-h1{font-size:22px;margin:4px 0 14px}
-h2{font-size:17px;margin:0 0 10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-input,textarea,select{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);margin-bottom:8px}
-textarea{min-height:110px;resize:vertical}
-button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 16px;background:var(--pri);color:var(--pri-t);cursor:pointer}
+html,body{margin:0;height:100%;overscroll-behavior:none}
+body{background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#top{position:sticky;top:0;z-index:6;background:var(--pri);color:var(--pri-t);padding:calc(10px + env(safe-area-inset-top)) 16px 10px;text-align:center}
+#fund{font-size:26px;font-weight:800;letter-spacing:-.5px}
+#cpsline{font-size:13px;opacity:.9}
+#app{max-width:640px;margin:0 auto;padding:14px 14px calc(84px + env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+h2{font-size:17px;margin:0 0 8px}
+.sub{color:var(--sub);font-size:13px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 14px;background:var(--pri);color:var(--pri-t);cursor:pointer;touch-action:manipulation}
 button.sec{background:transparent;color:var(--pri);border:1px solid var(--line)}
-button.danger{background:transparent;color:var(--ng);border:1px solid var(--line)}
-button:disabled{opacity:.4}
-.row{display:flex;gap:8px;flex-wrap:wrap}
-.row>*{flex:1}
-.grow{flex:1}
-.sub{color:var(--sub);font-size:14px}
-.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);
-  padding-bottom:env(safe-area-inset-bottom);z-index:5}
-.tabs button{flex:1;background:none;color:var(--sub);border-radius:0;padding:10px 4px 9px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
-.tabs button span{font-size:20px;line-height:1}
+button.danger{background:transparent;color:#dc2626;border:1px solid var(--line)}
+button:disabled{opacity:.38}
+textarea{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);min-height:90px;-webkit-user-select:text;user-select:text}
+.tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:7}
+.tabs button{flex:1;background:none;color:var(--sub);border-radius:0;padding:9px 2px 8px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:1px;position:relative}
+.tabs button span{font-size:21px;line-height:1.1}
 .tabs button.on{color:var(--pri)}
-.item{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
-.item:last-child{border-bottom:0}
-.item .w{font-weight:700;font-size:17px}
-.item .m{color:var(--text)}
-.item .e{color:var(--sub);font-size:14px;font-style:italic}
-.icon{background:none;color:var(--sub);padding:6px 8px;font-size:18px;border-radius:8px}
-.big{font-size:32px;font-weight:800;text-align:center;margin:18px 0 6px;word-break:break-word}
-.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--text);border:1px solid var(--line);margin-bottom:8px;padding:14px}
-.opt.ok{background:var(--okbg);border-color:var(--ok)}
-.opt.ng{background:var(--ngbg);border-color:var(--ng)}
-.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 14px}
-.bar i{display:block;height:100%;background:var(--pri);width:0}
-.fb{padding:10px 12px;border-radius:10px;margin:8px 0;font-weight:600}
-.fb.ok{background:var(--okbg);color:var(--ok)}
-.fb.ng{background:var(--ngbg);color:var(--ng)}
-.flip{min-height:190px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer;user-select:none}
-.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center}
-.stat b{display:block;font-size:22px}
-.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--sub);border:1px solid var(--line)}
-.empty{text-align:center;color:var(--sub);padding:28px 8px}
+.dot{position:absolute;top:5px;right:calc(50% - 20px);width:9px;height:9px;border-radius:50%;background:#ef4444}
+
+/* 연구실 */
+.scene{position:relative;background:linear-gradient(var(--scene1),var(--scene2));border-radius:18px;border:1px solid var(--line);padding:14px 10px 0;overflow:hidden;margin-bottom:12px;min-height:330px}
+.sign{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:800;letter-spacing:2px;color:var(--pri);opacity:.8}
+.pi{display:block;margin:16px auto 0;width:128px;cursor:pointer;touch-action:manipulation;transition:transform .08s}
+.pi svg{width:100%;height:auto;display:block;pointer-events:none}
+.pi.pop{animation:pop .22s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.12) rotate(-3deg)}100%{transform:scale(1)}}
+.hint{text-align:center;font-weight:800;margin:4px 0 0}
+.hint small{display:block;font-weight:600;color:var(--sub)}
+.crew{display:flex;flex-wrap:wrap;gap:4px 8px;justify-content:center;margin-top:12px;padding:10px 6px 0;min-height:84px;background:linear-gradient(transparent,rgba(0,0,0,.06))}
+.mate{position:relative;width:52px;animation:bob 1.6s ease-in-out infinite}
+.mate svg{width:100%;height:auto;display:block}
+.mate b{position:absolute;right:-2px;bottom:2px;background:var(--pri);color:var(--pri-t);font-size:10px;border-radius:9px;padding:0 5px;line-height:16px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.bench{height:14px;background:var(--bench);margin:0 -10px}
+.float{position:absolute;font-weight:900;color:var(--acc);text-shadow:0 1px 0 rgba(0,0,0,.25);pointer-events:none;animation:rise .9s ease-out forwards;z-index:3;font-size:18px}
+@keyframes rise{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-60px)}}
+.idea{position:absolute;font-size:38px;background:none;padding:0;border-radius:50%;animation:pulse 1s infinite;z-index:4;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
+@keyframes pulse{50%{transform:scale(1.18)}}
+.empty{color:var(--sub);text-align:center;padding:18px 6px;width:100%}
+
+/* 목록 */
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg button{flex:1;background:var(--card);color:var(--sub);border:1px solid var(--line);padding:8px}
+.seg button.on{background:var(--pri);color:var(--pri-t);border-color:var(--pri)}
+.row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .av{width:46px;flex:none}
+.row .av svg{width:100%;height:auto;display:block}
+.grow{flex:1;min-width:0}
+.rn{font-weight:800}
+.pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--sub);margin-left:4px;vertical-align:1px}
+.buy{min-width:92px;text-align:center;line-height:1.25}
+.buy small{display:block;font-weight:600;opacity:.9;font-size:11px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:14px}
+.stat div:nth-child(odd){color:var(--sub)}
+.stat div:nth-child(even){text-align:right;font-weight:700}
+.big{font-size:30px;font-weight:900;text-align:center;margin:6px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:20px}
+.modal .card{max-width:360px;width:100%;text-align:center;margin:0}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;margin:8px 0}
+.bar i{display:block;height:100%;background:var(--pri)}
 </style>
 </head>
 <body>
+<div id="top"><div id="fund">0원</div><div id="cpsline"></div></div>
 <div id="app"></div>
 <nav class="tabs" id="tabs"></nav>
+<div id="modal"></div>
 
 <script>
 "use strict";
-/* ============ 저장소 ============ */
-const KEY = "vocab.v1";
-let mem = null; // localStorage 사용 불가 시 대비
+/* ====================== 데이터 ====================== */
+const ROLES = [
+  {id:0,name:"학부 연구생",base:15,cps:0.1,hair:"short",hc:"#2b2118",skin:"#f2c9a5",shirt:"#7dd3fc",acc:"none",desc:"열정 하나는 최고인 새내기"},
+  {id:1,name:"석사과정",base:100,cps:1,hair:"long",hc:"#4b2e1e",skin:"#efc3a0",shirt:"#a5b4fc",acc:"glasses",desc:"장비 사용법을 마스터하는 중"},
+  {id:2,name:"박사과정",base:1100,cps:8,hair:"bun",hc:"#1f1f2e",skin:"#e8b896",shirt:"#86efac",acc:"glasses",desc:"밤샘 실험이 일상인 에이스"},
+  {id:3,name:"포닥",base:12000,cps:47,hair:"curly",hc:"#6b3a1a",skin:"#c98f66",shirt:"#fde68a",acc:"goggles",desc:"논문을 척척 써내는 연구원"},
+  {id:4,name:"연구교수",base:130000,cps:260,hair:"short",hc:"#9ca3af",skin:"#f0c8a8",shirt:"#fca5a5",acc:"tie",desc:"과제를 이끄는 중견 연구자"},
+  {id:5,name:"책임연구원",base:1400000,cps:1400,hair:"bald",hc:"#3a2a22",skin:"#d9a47a",shirt:"#c4b5fd",acc:"glasses",desc:"산업체와 협업하는 베테랑"},
+  {id:6,name:"석학 교수",base:20000000,cps:7800,hair:"white",hc:"#f3f4f6",skin:"#f2cfb0",shirt:"#fcd34d",acc:"medal",desc:"학계가 주목하는 노벨상 후보"},
+  {id:7,name:"연구소장",base:330000000,cps:44000,hair:"side",hc:"#6b7280",skin:"#e9bf9c",shirt:"#f9a8d4",acc:"tie",desc:"HOPE 연구소를 이끄는 리더"}
+];
+const PI = {name:"나",hair:"short",hc:"#2b2118",skin:"#f2c9a5",shirt:"#f87171",acc:"glasses",flask:true};
+
+const RN = [
+  ["연구노트 & 형광펜","전용 책상과 의자","국가장학금","연구실 우수 인턴상"],
+  ["XRD 사용권","SEM 사용권","학회 포스터 발표","석사 논문 우수상"],
+  ["글러브박스","TEM 사용권","국제 공동 연구","SCI 논문 게재"],
+  ["ALD 장비","고성능 서버","해외 연수","연구재단 신진과제"],
+  ["클린룸 확보","연구센터 설립","대형 과제 수주","산학협력 네트워크"],
+  ["싱크로트론 빔타임","슈퍼컴퓨터 할당","특허 포트폴리오","기술이전 계약"],
+  ["양자 시뮬레이터","국제 컨소시엄","석학 초청 강연","학술원 회원 선임"],
+  ["거대 연구 인프라","국가 R&D 총괄","글로벌 연구거점","HOPE 재단 설립"]
+];
+const UPG = [
+  {id:"c1",name:"피펫 & 비커 세트",desc:"실험 수익 ×2",cost:100,type:"click",m:2},
+  {id:"c2",name:"전자저울",desc:"실험 수익 ×2",cost:1500,type:"click",m:2},
+  {id:"k1",name:"자동 측정기",desc:"실험 수익 +초당 수익의 1%",cost:20000,type:"cpsclick",v:0.01},
+  {id:"c3",name:"자기 교반기",desc:"실험 수익 ×2",cost:100000,type:"click",m:2},
+  {id:"k2",name:"데이터 자동 수집",desc:"실험 수익 +초당 수익의 1%",cost:2e6,type:"cpsclick",v:0.01},
+  {id:"c4",name:"고성능 분석 소프트웨어",desc:"실험 수익 ×2",cost:5e7,type:"click",m:2},
+  {id:"k3",name:"AI 분석 파이프라인",desc:"실험 수익 +초당 수익의 2%",cost:1e9,type:"cpsclick",v:0.02},
+  {id:"g1",name:"연구실 증축",desc:"모든 연구원 수익 ×1.25",cost:5000,type:"all",m:1.25},
+  {id:"g2",name:"교내 연구비 지원",desc:"모든 연구원 수익 ×1.5",cost:300000,type:"all",m:1.5},
+  {id:"g3",name:"국책 과제 선정",desc:"모든 연구원 수익 ×2",cost:2e7,type:"all",m:2},
+  {id:"g4",name:"대형 연구센터 유치",desc:"모든 연구원 수익 ×2",cost:3e9,type:"all",m:2},
+  {id:"g5",name:"국제 공동 연구 네트워크",desc:"모든 연구원 수익 ×3",cost:5e11,type:"all",m:3}
+];
+ROLES.forEach(r=>{
+  [[5,10,2],[25,100,2],[50,3000,2],[100,200000,3]].forEach(([req,cm,m],k)=>{
+    UPG.push({id:`r${r.id}_${k}`,name:RN[r.id][k],desc:`${r.name} 수익 ×${m}`,cost:r.base*cm,type:"res",i:r.id,m,req});
+  });
+});
+
+const GROW = 1.15;
+const OFFLINE_CAP = 8*3600;
+const PAPER_BASE = 1e7;       // 논문 1편에 필요한 누적 연구비
+const PAPER_BONUS = 0.10;     // 논문 1편당 수익 보너스
+
+/* ====================== 저장/상태 ====================== */
+const KEY = "hopelab.v1";
+const DEF = ()=>({funds:0,total:0,allTime:0,owned:ROLES.map(()=>0),upg:{},papers:0,clicks:0,prestiges:0,last:Date.now(),started:Date.now()});
 function load(){
-  try{ const s = localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
-  return mem || {words:[], log:[]};
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if(s && typeof s==="object"){
+      const o = Object.assign(DEF(), s);
+      if(!Array.isArray(o.owned)) o.owned = ROLES.map(()=>0);
+      while(o.owned.length<ROLES.length) o.owned.push(0);
+      ["funds","total","allTime","papers","clicks","prestiges"].forEach(k=>{ if(!isFinite(o[k])||o[k]<0) o[k]=0; });
+      if(!isFinite(o.last)) o.last=Date.now();
+      return o;
+    }
+  }catch(e){}
+  return DEF();
 }
-let db = load();
+let memSave=null;
 function save(){
-  mem = db;
-  try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){}
+  S.last = Date.now();
+  const txt = JSON.stringify(S);
+  memSave = txt;
+  try{ localStorage.setItem(KEY, txt); }catch(e){}
 }
+let S = load();
 try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
 
-/* ============ 유틸 ============ */
+/* ====================== 계산 ====================== */
+let D = null;
+function derive(){
+  const resM = ROLES.map(()=>1); let allM=1, clickM=1, cpsPct=0;
+  for(const u of UPG){
+    if(!S.upg[u.id]) continue;
+    if(u.type==="res") resM[u.i]*=u.m;
+    else if(u.type==="all") allM*=u.m;
+    else if(u.type==="click") clickM*=u.m;
+    else if(u.type==="cpsclick") cpsPct+=u.v;
+  }
+  const paperM = 1 + PAPER_BONUS*S.papers;
+  let cps = 0;
+  const per = ROLES.map((r,i)=>{ const p = r.cps*resM[i]*allM*paperM; cps += p*S.owned[i]; return p; });
+  D = {cps, per, paperM, click: clickM*paperM + cps*cpsPct};
+}
+function gain(v){ S.funds+=v; S.total+=v; S.allTime+=v; }
+function unitCost(i){ return ROLES[i].base*Math.pow(GROW,S.owned[i]); }
+function costFor(i,k){ return Math.ceil(unitCost(i)*(Math.pow(GROW,k)-1)/(GROW-1)); }
+function maxAff(i){ return Math.max(0, Math.floor(Math.log(S.funds*(GROW-1)/unitCost(i)+1)/Math.log(GROW))); }
+function paperGain(){ return Math.floor(Math.sqrt(S.total/PAPER_BASE)); }
+
+function fmt(n){
+  if(!isFinite(n)) return "∞";
+  if(n<10) return (Math.floor(n*10)/10).toString();
+  if(n<1e4) return Math.floor(n).toLocaleString("ko-KR");
+  const units=[["해",1e20],["경",1e16],["조",1e12],["억",1e8],["만",1e4]];
+  for(const [u,v] of units){
+    if(n>=v){
+      const x=n/v;
+      let s = x>=100? x.toFixed(0) : x>=10? x.toFixed(1) : x.toFixed(2);
+      if(s.includes(".")) s=s.replace(/\.?0+$/,"");
+      return s+u;
+    }
+  }
+  return Math.floor(n).toLocaleString("ko-KR");
+}
+function fmtTime(sec){
+  sec=Math.floor(sec); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60);
+  return h? `${h}시간 ${m}분` : m? `${m}분` : `${sec}초`;
+}
 const $ = (s,r=document)=>r.querySelector(s);
-const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const uid = ()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
-const norm = s => String(s).trim().toLowerCase().replace(/\s+/g," ");
-function speak(t){
-  try{
-    const u = new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=.9;
-    speechSynthesis.cancel(); speechSynthesis.speak(u);
-  }catch(e){}
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ====================== 아바타(SVG) ====================== */
+function avatar(r){
+  const hc=r.hc, sk=r.skin;
+  const cap = `<path d="M18 30 Q17 11 32 11 Q47 11 46 30 Q41 21 32 21 Q23 21 18 30Z" fill="${hc}"/>`;
+  let back="", front="";
+  switch(r.hair){
+    case "short": front=cap; break;
+    case "long": back=`<rect x="15" y="20" width="34" height="32" rx="12" fill="${hc}"/>`; front=cap; break;
+    case "bun": back=`<circle cx="32" cy="8" r="6.5" fill="${hc}"/>`; front=cap; break;
+    case "curly": front=[[20,18],[27,13],[35,13],[43,18],[17,26],[47,26],[32,16]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="7" fill="${hc}"/>`).join(""); break;
+    case "bald": front=`<circle cx="18" cy="31" r="3.2" fill="${hc}"/><circle cx="46" cy="31" r="3.2" fill="${hc}"/>`; break;
+    case "white": front=`<path d="M17 32 Q15 10 32 10 Q49 10 47 32 Q44 22 32 21 Q20 22 17 32Z" fill="${hc}" stroke="#d1d5db" stroke-width=".8"/>`; break;
+    case "side": front=`<path d="M18 30 Q16 12 33 11 Q47 11 46 28 Q40 17 28 20 Q22 22 18 30Z" fill="${hc}"/>`; break;
+  }
+  let acc="";
+  if(r.acc==="glasses") acc=`<g fill="none" stroke="#334155" stroke-width="1.6"><circle cx="26" cy="31" r="4.6"/><circle cx="38" cy="31" r="4.6"/><path d="M30.6 31h2.8"/></g>`;
+  if(r.acc==="goggles") acc=`<rect x="18" y="19" width="28" height="6" rx="3" fill="#60a5fa" stroke="#1d4ed8" stroke-width="1"/>`;
+  const shirtTie = r.acc==="tie" ? `<path d="M30 48 L34 48 L35 62 L32 66 L29 62Z" fill="#dc2626"/>` : "";
+  const medal = r.acc==="medal" ? `<path d="M38 48 L44 48 L41 58Z" fill="#ef4444"/><circle cx="41" cy="60" r="4" fill="#fbbf24" stroke="#b45309" stroke-width="1"/>` : "";
+  const flask = r.flask ? `<g transform="translate(46,50)"><path d="M4 0h6v9l7 12a3 3 0 0 1-2.6 4.5H-.4A3 3 0 0 1-3 21L4 9Z" fill="#5eead4" stroke="#0f766e" stroke-width="1.2"/><path d="M-1 20h16" stroke="#0f766e" stroke-width="1.2"/></g>` : "";
+  return `<svg viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    ${back}
+    <path d="M7 80 Q7 47 32 45 Q57 47 57 80Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+    <path d="M25 45 L32 62 L39 45Z" fill="${r.shirt}"/>
+    <path d="M25 45 L30 62 M39 45 L34 62" stroke="#cbd5e1" stroke-width="1" fill="none"/>
+    ${shirtTie}${medal}
+    <rect x="28" y="38" width="8" height="9" fill="${sk}"/>
+    <circle cx="32" cy="30" r="14" fill="${sk}"/>
+    ${front}
+    <circle cx="26" cy="31" r="1.8" fill="#222"/><circle cx="38" cy="31" r="1.8" fill="#222"/>
+    <ellipse cx="22" cy="36" rx="3" ry="2" fill="#f9a8a8" opacity=".55"/><ellipse cx="42" cy="36" rx="3" ry="2" fill="#f9a8a8" opacity=".55"/>
+    <path d="M28 37 Q32 41 36 37" stroke="#7a3b2e" fill="none" stroke-width="1.6" stroke-linecap="round"/>
+    ${acc}${flask}
+  </svg>`;
 }
 
-/* ============ 상태 ============ */
-let tab = "words";
-let search = "";
-let editId = null;
-let quiz = null;           // 진행 중인 퀴즈
-let quizCfg = {mode:"mix", count:"10"};
+/* ====================== 화면 ====================== */
+let tab = "lab";
+let buyMode = 1;           // 1, 10, "max"
+let idea = null;           // {x,y,until}
+let nextIdea = Date.now() + 40000;
+let sigUpg = "";
 
-const TABS = [["words","📖","단어장"],["quiz","✏️","퀴즈"],["stats","📊","통계"],["data","💾","백업"]];
+const TABS=[["lab","🧪","연구실"],["hire","🧑‍🔬","인력"],["upg","🔬","장비"],["paper","📄","논문"],["set","⚙️","설정"]];
 function renderTabs(){
-  $("#tabs").innerHTML = TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?"on":""}"><span>${t[1]}</span>${t[2]}</button>`).join("");
+  $("#tabs").innerHTML = TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?"on":""}"><span>${t[1]}</span>${t[2]}${t[0]==="paper"&&paperGain()>=1?'<i class="dot"></i>':""}</button>`).join("");
 }
-$("#tabs").addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(!b) return;
-  tab=b.dataset.t; render();
-});
+$("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; tab=b.dataset.t; render(); });
+
 function render(){
   renderTabs();
-  const v = {words:viewWords, quiz:viewQuiz, stats:viewStats, data:viewData}[tab];
-  v(); window.scrollTo(0,0);
+  ({lab:viewLab,hire:viewHire,upg:viewUpg,paper:viewPaper,set:viewSet})[tab]();
+  window.scrollTo(0,0);
+  refresh();
 }
 
-/* ============ 단어장 ============ */
-function viewWords(){
-  const app=$("#app");
-  const ed = editId ? db.words.find(w=>w.id===editId) : null;
-  app.innerHTML = `
-    <h1>단어장 <span class="sub">${db.words.length}개</span></h1>
-    <div class="card">
-      <h2>${ed?"단어 수정":"단어 추가"}</h2>
-      <input id="fw" placeholder="영어 단어 (예: resilient)" autocapitalize="none" autocorrect="off" value="${esc(ed?ed.w:"")}">
-      <input id="fm" placeholder="뜻 (예: 회복력 있는)" value="${esc(ed?ed.m:"")}">
-      <input id="fe" placeholder="예문 (선택)" autocapitalize="none" value="${esc(ed?ed.e:"")}">
-      <div class="row">
-        <button id="fsave">${ed?"수정 저장":"추가"}</button>
-        ${ed?'<button class="sec" id="fcancel">취소</button>':""}
-      </div>
+/* ---- 연구실 ---- */
+function viewLab(){
+  const owned = ROLES.filter(r=>S.owned[r.id]>0);
+  $("#app").innerHTML = `
+    <div class="scene" id="scene">
+      <div class="sign">HOPE LAB</div>
+      <div class="pi" id="pi">${avatar(PI)}</div>
+      <div class="hint">🧪 눌러서 실험하기<small id="clickval"></small></div>
+      <div class="crew" id="crew">${
+        owned.length? owned.map((r,k)=>`<div class="mate" style="animation-delay:${(k*0.23).toFixed(2)}s" title="${esc(r.name)}">${avatar(r)}<b>${S.owned[r.id]}</b></div>`).join("")
+                    : `<div class="empty">아직 동료가 없어요.<br>인력 탭에서 연구생을 뽑아보세요!</div>`}</div>
+      <div class="bench"></div>
     </div>
-    <input id="fs" type="search" placeholder="검색 (단어 또는 뜻)" value="${esc(search)}">
-    <div class="card" id="list"></div>`;
-  $("#fsave").onclick = ()=>{
-    const w=$("#fw").value.trim(), m=$("#fm").value.trim(), e=$("#fe").value.trim();
-    if(!w||!m){ alert("영어 단어와 뜻을 모두 입력해주세요."); return; }
-    if(ed){ ed.w=w; ed.m=m; ed.e=e; editId=null; }
-    else{
-      if(db.words.some(x=>norm(x.w)===norm(w)) && !confirm(`"${w}" 는 이미 있어요. 그래도 추가할까요?`)) return;
-      db.words.unshift({id:uid(),w,m,e,box:0,ok:0,ng:0,last:0});
-    }
-    save(); viewWords();
-  };
-  if(ed) $("#fcancel").onclick=()=>{editId=null;viewWords();};
-  $("#fs").oninput=e=>{search=e.target.value; drawList();};
-  $("#list").addEventListener("click",e=>{
-    const b=e.target.closest("button"); if(!b) return;
-    const id=b.dataset.id, w=db.words.find(x=>x.id===id);
-    if(b.dataset.a==="say") speak(w.w);
-    if(b.dataset.a==="edit"){ editId=id; viewWords(); window.scrollTo(0,0); }
-    if(b.dataset.a==="del" && confirm(`"${w.w}" 를 삭제할까요?`)){ db.words=db.words.filter(x=>x.id!==id); save(); viewWords(); }
+    <div class="card" id="goal"></div>`;
+  const pi=$("#pi"), scene=$("#scene");
+  pi.addEventListener("pointerdown",ev=>{
+    ev.preventDefault();
+    const v=D.click; gain(v); S.clicks++;
+    const rc=scene.getBoundingClientRect();
+    floatText(scene, ev.clientX-rc.left, ev.clientY-rc.top-14, "+"+fmt(v));
+    pi.classList.remove("pop"); void pi.offsetWidth; pi.classList.add("pop");
+    refresh();
   });
-  drawList();
+  if(idea) placeIdea();
 }
-function drawList(){
-  const q=norm(search);
-  const list=db.words.filter(w=>!q||norm(w.w).includes(q)||norm(w.m).includes(q));
-  $("#list").innerHTML = list.length ? list.map(w=>`
-    <div class="item">
-      <div class="grow">
-        <div class="w">${esc(w.w)} <span class="pill">Lv.${w.box}</span></div>
-        <div class="m">${esc(w.m)}</div>
-        ${w.e?`<div class="e">${esc(w.e)}</div>`:""}
-      </div>
-      <button class="icon" data-a="say" data-id="${w.id}" aria-label="발음">🔊</button>
-      <button class="icon" data-a="edit" data-id="${w.id}" aria-label="수정">✏️</button>
-      <button class="icon" data-a="del" data-id="${w.id}" aria-label="삭제">🗑️</button>
-    </div>`).join("") : `<div class="empty">${db.words.length?"검색 결과가 없어요.":"아직 단어가 없어요.<br>위에서 추가하거나 '백업' 탭에서 한꺼번에 가져오세요."}</div>`;
+function floatText(host,x,y,t){
+  const e=document.createElement("div"); e.className="float"; e.textContent=t;
+  e.style.left=x+"px"; e.style.top=y+"px"; host.appendChild(e); setTimeout(()=>e.remove(),950);
 }
-
-/* ============ 퀴즈 ============ */
-function viewQuiz(){
-  if(!quiz) return quizSetup();
-  if(quiz.done) return quizResult();
-  quizQuestion();
-}
-function quizSetup(){
-  const n=db.words.length;
-  $("#app").innerHTML = `
-    <h1>퀴즈</h1>
-    <div class="card">
-      <label class="sub">방식</label>
-      <select id="qm">
-        <option value="mix">섞어서 출제</option>
-        <option value="en2ko">객관식 (영어 → 뜻)</option>
-        <option value="ko2en">객관식 (뜻 → 영어)</option>
-        <option value="spell">스펠링 입력 (뜻 → 영어)</option>
-        <option value="card">카드 뒤집기</option>
-      </select>
-      <label class="sub">문제 수</label>
-      <select id="qc">
-        <option value="10">10문제</option><option value="20">20문제</option>
-        <option value="all">전체</option><option value="weak">틀린 적 있는 단어만</option>
-      </select>
-      <button id="qgo" style="width:100%" ${n<1?"disabled":""}>시작</button>
-      <p class="sub">${n<1?"단어를 먼저 추가해주세요.":n<4?"객관식은 단어가 4개 이상일 때 나옵니다. 지금은 스펠링으로 출제돼요.":"자주 틀리거나 레벨이 낮은 단어가 더 자주 나와요."}</p>
-    </div>`;
-  $("#qm").value=quizCfg.mode; $("#qc").value=quizCfg.count;
-  $("#qgo").onclick=()=>{
-    quizCfg={mode:$("#qm").value,count:$("#qc").value};
-    startQuiz();
-  };
-}
-function weightedPick(pool,k){
-  const items=pool.map(w=>({w,x:(1+(4-w.box)+Math.min(w.ng,5))}));
-  const out=[];
-  while(out.length<k && items.length){
-    let tot=items.reduce((s,i)=>s+i.x,0), r=Math.random()*tot, idx=0;
-    for(;idx<items.length;idx++){ r-=items[idx].x; if(r<=0) break; }
-    idx=Math.min(idx,items.length-1);
-    out.push(items.splice(idx,1)[0].w);
-  }
-  return out;
-}
-function startQuiz(){
-  let pool=db.words.slice();
-  if(quizCfg.count==="weak"){ pool=pool.filter(w=>w.ng>0); if(!pool.length){ alert("아직 틀린 단어가 없어요."); return; } }
-  const k = (quizCfg.count==="all"||quizCfg.count==="weak") ? pool.length : Math.min(+quizCfg.count,pool.length);
-  const picked = shuffle(weightedPick(pool,k));
-  const canMC = db.words.length>=4;
-  const modes=["en2ko","ko2en","spell"];
-  const qs = picked.map(w=>{
-    let m=quizCfg.mode;
-    if(m==="mix") m = modes[Math.floor(Math.random()*modes.length)];
-    if((m==="en2ko"||m==="ko2en") && !canMC) m="spell";
-    return {id:w.id, mode:m};
+function placeIdea(){
+  const scene=$("#scene"); if(!scene||!idea||$("#ideaBtn")) return;
+  const b=document.createElement("button"); b.id="ideaBtn"; b.className="idea"; b.textContent="💡"; b.setAttribute("aria-label","연구 아이디어");
+  b.style.left=idea.x+"%"; b.style.top=idea.y+"%";
+  b.addEventListener("pointerdown",ev=>{
+    ev.preventDefault(); ev.stopPropagation();
+    const v = D.cps*45 + D.click*20;
+    gain(v); idea=null; b.remove(); nextIdea=Date.now()+(60+Math.random()*80)*1000;
+    const rc=scene.getBoundingClientRect();
+    floatText(scene, ev.clientX-rc.left, ev.clientY-rc.top-14, "💡 +"+fmt(v));
+    try{ navigator.vibrate&&navigator.vibrate(30); }catch(e){}
+    refresh();
   });
-  quiz={qs,i:0,right:0,wrong:[],answered:false,flipped:false,opts:null,done:false};
-  render();
-}
-function record(id,ok){
-  const w=db.words.find(x=>x.id===id); if(!w) return;
-  if(ok){ w.ok++; w.box=Math.min(4,w.box+1); } else { w.ng++; w.box=0; }
-  w.last=Date.now();
-  db.log.push({t:Date.now(),ok:ok?1:0});
-  if(db.log.length>5000) db.log=db.log.slice(-5000);
-  save();
-}
-function makeOptions(q,w){
-  const correct = q.mode==="en2ko" ? w.m : w.w;
-  const others = shuffle(db.words.filter(x=>x.id!==w.id)
-    .map(x=>q.mode==="en2ko"?x.m:x.w)
-    .filter((v,i,a)=>norm(v)!==norm(correct)&&a.findIndex(y=>norm(y)===norm(v))===i)).slice(0,3);
-  return shuffle([correct,...others]).map(t=>({t,ok:norm(t)===norm(correct)}));
-}
-function quizHead(){
-  const total=quiz.qs.length;
-  return `<div class="row" style="align-items:center;margin-bottom:0">
-      <div class="sub">${quiz.i+1} / ${total}</div>
-      <div style="flex:0"><button class="sec" id="qquit" style="padding:6px 12px">중단</button></div>
-    </div>
-    <div class="bar"><i style="width:${(quiz.i/total)*100}%"></i></div>`;
-}
-function quizQuestion(){
-  const q=quiz.qs[quiz.i];
-  const w=db.words.find(x=>x.id===q.id);
-  if(!w){ quiz.i++; if(quiz.i>=quiz.qs.length){quiz.done=true;} return render(); }
-  const app=$("#app");
-  let body="";
-  if(q.mode==="en2ko"||q.mode==="ko2en"){
-    if(!quiz.opts) quiz.opts=makeOptions(q,w);
-    const prompt = q.mode==="en2ko" ? esc(w.w) : esc(w.m);
-    body = `<div class="big">${prompt}</div>
-      ${q.mode==="en2ko"?`<div style="text-align:center;margin-bottom:12px"><button class="sec" id="qsay">🔊 발음</button></div>`:`<div class="sub" style="text-align:center;margin-bottom:12px">알맞은 영어 단어를 고르세요</div>`}
-      ${quiz.opts.map((o,i)=>`<button class="opt ${quiz.answered?(o.ok?"ok":(o.pick?"ng":"")):""}" data-i="${i}" ${quiz.answered?"disabled":""}>${esc(o.t)}</button>`).join("")}`;
-  } else if(q.mode==="spell"){
-    body = `<div class="sub" style="text-align:center">뜻을 보고 영어로 쓰세요</div>
-      <div class="big">${esc(w.m)}</div>
-      <input id="qin" placeholder="영어 단어 입력" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" ${quiz.answered?"disabled":""} value="${esc(quiz.typed||"")}">
-      ${quiz.answered?"":`<button id="qcheck" style="width:100%">확인</button>`}`;
-  } else { // card
-    body = `<div class="card flip" id="qflip">
-      ${quiz.flipped
-        ? `<div class="big" style="margin:0">${esc(w.m)}</div>${w.e?`<div class="e sub" style="margin-top:8px">${esc(w.e)}</div>`:""}<div class="sub" style="margin-top:8px">${esc(w.w)}</div>`
-        : `<div class="big" style="margin:0">${esc(w.w)}</div><div class="sub" style="margin-top:10px">탭해서 뜻 보기</div>`}
-      </div>
-      ${quiz.flipped && !quiz.answered?`<div class="row"><button class="danger" id="cno">몰랐어요</button><button id="cyes">알았어요</button></div>`:""}`;
-  }
-  const fb = quiz.answered && quiz.fb ? `<div class="fb ${quiz.fb.ok?"ok":"ng"}">${quiz.fb.text}</div>` : "";
-  const next = quiz.answered ? `<button id="qnext" style="width:100%;margin-top:6px">${quiz.i+1>=quiz.qs.length?"결과 보기":"다음"}</button>` : "";
-  app.innerHTML = quizHead()+body+fb+next;
-
-  $("#qquit").onclick=()=>{ if(confirm("퀴즈를 중단할까요?")){ quiz=null; render(); } };
-  if($("#qsay")) $("#qsay").onclick=()=>speak(w.w);
-  if($("#qnext")) $("#qnext").onclick=()=>{
-    quiz.i++; quiz.answered=false; quiz.flipped=false; quiz.opts=null; quiz.fb=null; quiz.typed="";
-    if(quiz.i>=quiz.qs.length) quiz.done=true;
-    render();
-  };
-  if(q.mode==="en2ko"||q.mode==="ko2en"){
-    app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
-      if(quiz.answered) return;
-      const o=quiz.opts[+b.dataset.i]; o.pick=true;
-      answer(w,o.ok, o.ok?"정답!":`오답 · 정답: ${esc(q.mode==="en2ko"?w.m:w.w)}`);
-      if(q.mode==="ko2en") speak(w.w);
-    });
-  } else if(q.mode==="spell"){
-    const inp=$("#qin");
-    if(!quiz.answered){
-      setTimeout(()=>inp&&inp.focus(),50);
-      const check=()=>{
-        quiz.typed=inp.value;
-        if(!inp.value.trim()) return;
-        const ok = norm(inp.value)===norm(w.w);
-        answer(w,ok, ok?"정답!":`오답 · 정답: ${esc(w.w)}`);
-        speak(w.w);
-      };
-      $("#qcheck").onclick=check;
-      inp.onkeydown=e=>{ if(e.key==="Enter") check(); };
-    }
-  } else {
-    const f=$("#qflip");
-    if(f) f.onclick=()=>{ if(!quiz.flipped){ quiz.flipped=true; speak(w.w); render(); } };
-    if($("#cyes")) $("#cyes").onclick=()=>{ answerCard(w,true); };
-    if($("#cno")) $("#cno").onclick=()=>{ answerCard(w,false); };
-  }
-}
-function answer(w,ok,text){
-  quiz.answered=true; quiz.fb={ok,text};
-  if(ok) quiz.right++; else quiz.wrong.push(w.id);
-  record(w.id,ok);
-  quizQuestion();
-}
-function answerCard(w,ok){
-  // 카드는 바로 다음 문제로
-  if(ok) quiz.right++; else quiz.wrong.push(w.id);
-  record(w.id,ok);
-  quiz.i++; quiz.flipped=false; quiz.answered=false; quiz.opts=null; quiz.fb=null;
-  if(quiz.i>=quiz.qs.length) quiz.done=true;
-  render();
-}
-function quizResult(){
-  const total=quiz.qs.length, pct=total?Math.round(quiz.right/total*100):0;
-  const wrongWords=quiz.wrong.map(id=>db.words.find(w=>w.id===id)).filter(Boolean);
-  $("#app").innerHTML = `
-    <h1>결과</h1>
-    <div class="card" style="text-align:center">
-      <div class="big" style="margin:4px 0">${quiz.right} / ${total}</div>
-      <div class="sub">정답률 ${pct}%</div>
-    </div>
-    ${wrongWords.length?`<div class="card"><h2>틀린 단어</h2>${wrongWords.map(w=>`
-      <div class="item"><div class="grow"><div class="w">${esc(w.w)}</div><div class="m">${esc(w.m)}</div></div>
-      <button class="icon" data-say="${w.id}">🔊</button></div>`).join("")}</div>`:`<div class="card empty">모두 맞혔어요! 🎉</div>`}
-    <div class="row"><button id="again">다시 풀기</button><button class="sec" id="home">처음으로</button></div>`;
-  $("#app").querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>{const w=db.words.find(x=>x.id===b.dataset.say); if(w) speak(w.w);});
-  $("#again").onclick=startQuiz;
-  $("#home").onclick=()=>{quiz=null;render();};
+  scene.appendChild(b);
 }
 
-/* ============ 통계 ============ */
-function viewStats(){
-  const ws=db.words, tot=ws.reduce((s,w)=>s+w.ok+w.ng,0), ok=ws.reduce((s,w)=>s+w.ok,0);
-  const rate = tot?Math.round(ok/tot*100):0;
-  const mastered=ws.filter(w=>w.box>=4).length;
-  const days=new Set(db.log.map(l=>new Date(l.t).toDateString())).size;
-  const weak=ws.filter(w=>w.ng>0).sort((a,b)=>(b.ng-b.ok*.5)-(a.ng-a.ok*.5)).slice(0,10);
-  const today=db.log.filter(l=>new Date(l.t).toDateString()===new Date().toDateString());
+/* ---- 인력 ---- */
+function visibleRoles(){ return ROLES.filter(r=>r.id===0 || S.owned[r.id-1]>0 || S.owned[r.id]>0); }
+function viewHire(){
   $("#app").innerHTML = `
-    <h1>통계</h1>
-    <div class="stat">
-      <div><b>${ws.length}</b><span class="sub">전체 단어</span></div>
-      <div><b>${mastered}</b><span class="sub">암기 완료</span></div>
-      <div><b>${rate}%</b><span class="sub">전체 정답률</span></div>
-      <div><b>${today.length}</b><span class="sub">오늘 푼 문제</span></div>
-      <div><b>${days}</b><span class="sub">학습한 날</span></div>
-      <div><b>${tot}</b><span class="sub">누적 문제</span></div>
+    <div class="seg" id="seg">
+      <button data-m="1">×1</button><button data-m="10">×10</button><button data-m="max">최대</button>
     </div>
-    <div class="card"><h2>약한 단어</h2>${weak.length?weak.map(w=>`
-      <div class="item"><div class="grow"><div class="w">${esc(w.w)}</div><div class="m">${esc(w.m)}</div></div>
-      <span class="pill">오답 ${w.ng} · 정답 ${w.ok}</span></div>`).join(""):`<div class="empty">틀린 단어가 아직 없어요.</div>`}</div>
-    <p class="sub">Lv.4 에 도달하면 '암기 완료'로 계산해요. 틀리면 Lv.0 으로 돌아가요.</p>`;
-}
-
-/* ============ 백업 ============ */
-function parseCSV(text){
-  const rows=[]; let row=[], cur="", q=false;
-  const sep = text.includes("\t") && !text.includes(",") ? "\t" : ",";
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(q){
-      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
-      else cur+=c;
-    } else if(c==='"') q=true;
-    else if(c===sep){ row.push(cur); cur=""; }
-    else if(c==="\n"||c==="\r"){ if(c==="\r"&&text[i+1]==="\n") i++; row.push(cur); cur=""; rows.push(row); row=[]; }
-    else cur+=c;
-  }
-  if(cur!==""||row.length){ row.push(cur); rows.push(row); }
-  return rows.filter(r=>r.some(x=>x.trim()));
-}
-function toCSV(){
-  const q=s=>`"${String(s||"").replace(/"/g,'""')}"`;
-  return "word,meaning,example\n"+db.words.map(w=>[q(w.w),q(w.m),q(w.e)].join(",")).join("\n");
-}
-function download(name,text,type){
-  try{
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob([text],{type}));
-    a.download=name; document.body.appendChild(a); a.click(); a.remove();
-  }catch(e){ alert("파일 저장이 안 되면 아래 '복사' 버튼을 사용하세요."); }
-}
-function viewData(){
-  $("#app").innerHTML = `
-    <h1>백업 · 가져오기</h1>
-    <div class="card">
-      <h2>단어 한꺼번에 추가</h2>
-      <p class="sub">한 줄에 하나씩 <b>영어,뜻,예문</b> 형태로 붙여넣으세요. 엑셀에서 복사해도 돼요. (예문은 생략 가능)</p>
-      <textarea id="imp" placeholder="apple,사과,I ate an apple.&#10;resilient,회복력 있는"></textarea>
-      <input type="file" id="impf" accept=".csv,.txt,.json,text/csv,text/plain,application/json">
-      <button id="impgo" style="width:100%">가져오기</button>
-      <div id="impmsg" class="sub" style="margin-top:8px"></div>
-    </div>
-    <div class="card">
-      <h2>내보내기 (백업)</h2>
-      <p class="sub">기기 데이터는 브라우저 설정에 따라 지워질 수 있으니 가끔 백업하세요.</p>
-      <div class="row">
-        <button id="exj">전체 백업(JSON) 저장</button>
-        <button class="sec" id="exc">단어만 CSV 저장</button>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <button class="sec" id="cpj">백업 텍스트 복사</button>
-      </div>
-      <p class="sub" style="margin-bottom:0">JSON 백업은 학습 기록(레벨, 정답 수)까지 포함해요. 복구할 때는 위 가져오기에 JSON 내용을 붙여넣으세요.</p>
-    </div>
-    <div class="card">
-      <h2>초기화</h2>
-      <button class="danger" id="wipe" style="width:100%">모든 데이터 삭제</button>
+    <div class="card" id="roles">${
+      visibleRoles().map(r=>`
+      <div class="row" data-i="${r.id}">
+        <div class="av">${avatar(r)}</div>
+        <div class="grow"><div class="rn">${esc(r.name)}<span class="pill" id="own${r.id}"></span></div>
+          <div class="sub">${esc(r.desc)}</div><div class="sub" id="rcps${r.id}"></div></div>
+        <button class="buy" data-i="${r.id}" id="buy${r.id}"></button>
+      </div>`).join("")}
     </div>`;
-  const msg=t=>$("#impmsg").textContent=t;
-  $("#impf").onchange=e=>{
-    const f=e.target.files[0]; if(!f) return;
-    const r=new FileReader(); r.onload=()=>{ $("#imp").value=r.result; msg(`${f.name} 내용을 불러왔어요. '가져오기'를 누르세요.`); }; r.readAsText(f);
+  $("#seg").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; buyMode = b.dataset.m==="max"?"max":+b.dataset.m; refresh(); });
+  $("#roles").addEventListener("click",e=>{
+    const b=e.target.closest(".buy"); if(!b) return; buy(+b.dataset.i);
+  });
+}
+function buyCount(i){ return buyMode==="max" ? Math.max(1,maxAff(i)) : buyMode; }
+function buy(i){
+  const k=buyCount(i), c=costFor(i,k);
+  if(S.funds<c) return;
+  S.funds-=c; S.owned[i]+=k; derive();
+  const newlyVisible = visibleRoles().length;
+  if(tab==="hire" && $("#roles").children.length!==newlyVisible) viewHire();
+  refresh(); save();
+}
+
+/* ---- 장비 ---- */
+function availUpg(){
+  return UPG.filter(u=>!S.upg[u.id] && (u.type==="res" ? S.owned[u.i]>=u.req : S.total>=u.cost*0.2)).sort((a,b)=>a.cost-b.cost);
+}
+function viewUpg(){
+  const list=availUpg();
+  sigUpg = list.map(u=>u.id).join(",");
+  const bought = UPG.filter(u=>S.upg[u.id]).length;
+  $("#app").innerHTML = `
+    <div class="card"><h2>장비 · 연구 환경</h2><div class="sub">구입 완료 ${bought} / ${UPG.length}</div></div>
+    <div class="card" id="ulist">${
+      list.length? list.map(u=>`
+      <div class="row">
+        <div class="grow"><div class="rn">${esc(u.name)}</div><div class="sub">${esc(u.desc)}</div></div>
+        <button class="buy" data-u="${u.id}" id="u_${u.id}"></button>
+      </div>`).join("") : `<div class="empty">지금 구입할 수 있는 장비가 없어요.<br>인력을 늘리거나 연구비를 더 모아보세요.</div>`}
+    </div>`;
+  $("#ulist").addEventListener("click",e=>{
+    const b=e.target.closest("[data-u]"); if(!b) return;
+    const u=UPG.find(x=>x.id===b.dataset.u); if(!u||S.funds<u.cost||S.upg[u.id]) return;
+    S.funds-=u.cost; S.upg[u.id]=true; derive(); viewUpg(); refresh(); save();
+  });
+}
+
+/* ---- 논문(환생) ---- */
+function viewPaper(){
+  $("#app").innerHTML = `
+    <div class="card">
+      <h2>📄 논문 투고</h2>
+      <p class="sub" style="margin-top:0">지금까지의 연구 성과를 논문으로 정리해 투고합니다. 연구비·인력·장비는 초기화되지만, 논문 1편마다 <b>모든 수익 +${Math.round(PAPER_BONUS*100)}%</b>가 영구히 적용돼요.</p>
+      <div class="stat">
+        <div>보유 논문</div><div id="pp">${S.papers}편</div>
+        <div>현재 보너스</div><div id="pm">×${(1+PAPER_BONUS*S.papers).toFixed(2)}</div>
+        <div>이번 회차 누적 연구비</div><div id="pt"></div>
+        <div>투고 시 받는 논문</div><div id="pg"></div>
+      </div>
+      <div class="bar"><i id="pbar"></i></div>
+      <div class="sub" id="pnext"></div>
+      <button id="pgo" style="width:100%;margin-top:10px">논문 투고하기</button>
+    </div>
+    <div class="card sub">논문 수는 누적 연구비의 제곱근에 비례해요. 한 번 더 키운 뒤 투고하면 더 많은 논문을 받을 수 있어요.</div>`;
+  $("#pgo").onclick=()=>{
+    const g=paperGain(); if(g<1) return;
+    if(!confirm(`논문 ${g}편을 받고 연구실을 초기화합니다. 진행할까요?`)) return;
+    S.papers+=g; S.prestiges++; S.funds=0; S.total=0; S.owned=ROLES.map(()=>0); S.upg={};
+    idea=null; derive(); save(); tab="lab"; render();
   };
-  $("#impgo").onclick=()=>{
-    const t=$("#imp").value.trim(); if(!t){ msg("가져올 내용이 없어요."); return; }
-    // JSON 백업 복원
-    if(t[0]==="{"){
-      try{
-        const d=JSON.parse(t);
-        if(!Array.isArray(d.words)) throw 0;
-        if(!confirm(`백업에서 단어 ${d.words.length}개를 복원합니다. 현재 데이터는 덮어써져요. 계속할까요?`)) return;
-        db={words:d.words.map(w=>({id:w.id||uid(),w:w.w,m:w.m,e:w.e||"",box:w.box|0,ok:w.ok|0,ng:w.ng|0,last:w.last|0})),log:Array.isArray(d.log)?d.log:[]};
-        save(); msg("복원 완료!"); return;
-      }catch(e){ msg("JSON 형식이 올바르지 않아요."); return; }
-    }
-    let rows=parseCSV(t);
-    if(rows.length && /^(word|영어|단어)$/i.test(rows[0][0].trim())) rows.shift();
-    let add=0, dup=0, bad=0;
-    const have=new Set(db.words.map(w=>norm(w.w)));
-    const fresh=[];
-    rows.forEach(r=>{
-      const w=(r[0]||"").trim(), m=(r[1]||"").trim(), e=(r[2]||"").trim();
-      if(!w||!m){ bad++; return; }
-      if(have.has(norm(w))){ dup++; return; }
-      have.add(norm(w)); fresh.push({id:uid(),w,m,e,box:0,ok:0,ng:0,last:0}); add++;
-    });
-    db.words=fresh.concat(db.words); save();
-    msg(`추가 ${add}개 · 중복 건너뜀 ${dup}개 · 형식 오류 ${bad}개`);
-    if(add) $("#imp").value="";
+}
+
+/* ---- 설정 ---- */
+function viewSet(){
+  const days=Math.max(1,Math.ceil((Date.now()-S.started)/86400000));
+  $("#app").innerHTML = `
+    <div class="card"><h2>기록</h2><div class="stat">
+      <div>플레이 일수</div><div>${days}일째</div>
+      <div>누적 연구비</div><div>${fmt(S.allTime)}원</div>
+      <div>실험 횟수</div><div>${S.clicks.toLocaleString("ko-KR")}회</div>
+      <div>논문 투고 횟수</div><div>${S.prestiges}회</div>
+    </div></div>
+    <div class="card">
+      <h2>백업 · 복원</h2>
+      <p class="sub" style="margin-top:0">진행 상황은 이 기기 안에만 저장돼요. 기기를 바꾸거나 데이터를 지우기 전에 백업하세요.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="bcopy">백업 복사</button><button class="sec" id="bsave">파일로 저장</button>
+      </div>
+      <textarea id="btext" placeholder="복원할 백업 내용을 여기에 붙여넣으세요" style="margin-top:10px"></textarea>
+      <button id="brestore" style="width:100%;margin-top:8px">붙여넣은 백업으로 복원</button>
+      <div class="sub" id="bmsg" style="margin-top:6px"></div>
+    </div>
+    <div class="card"><h2>안내</h2><div class="sub">앱을 닫아도 최대 ${OFFLINE_CAP/3600}시간 동안의 수익이 다시 열 때 한꺼번에 정산돼요. 연구 아이디어(💡)는 연구실 화면에서 가끔 나타나요.</div></div>
+    <div class="card"><button class="danger" id="wipe" style="width:100%">모든 데이터 삭제</button></div>`;
+  const msg=t=>$("#bmsg").textContent=t;
+  const dump=()=>JSON.stringify(Object.assign({},S,{last:Date.now()}));
+  $("#bcopy").onclick=async()=>{
+    try{ await navigator.clipboard.writeText(dump()); msg("복사했어요. 메모 앱 등에 붙여넣어 보관하세요."); }
+    catch(e){ $("#btext").value=dump(); msg("자동 복사가 막혀서 아래 칸에 넣어뒀어요. 전체 선택 후 복사하세요."); }
   };
-  const stamp=new Date().toISOString().slice(0,10);
-  $("#exj").onclick=()=>download(`vocab-backup-${stamp}.json`,JSON.stringify(db),"application/json");
-  $("#exc").onclick=()=>download(`vocab-words-${stamp}.csv`,"﻿"+toCSV(),"text/csv");
-  $("#cpj").onclick=async()=>{
-    try{ await navigator.clipboard.writeText(JSON.stringify(db)); msg("복사했어요. 메모 앱 등에 붙여넣어 보관하세요."); }
-    catch(e){ $("#imp").value=JSON.stringify(db); msg("자동 복사가 막혀서 위 입력창에 넣어뒀어요. 전체 선택 후 복사하세요."); }
+  $("#bsave").onclick=()=>{
+    try{
+      const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([dump()],{type:"application/json"}));
+      a.download=`hope-lab-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); a.remove();
+    }catch(e){ msg("파일 저장이 안 되면 '백업 복사'를 사용하세요."); }
+  };
+  $("#brestore").onclick=()=>{
+    try{
+      const d=JSON.parse($("#btext").value.trim());
+      if(!d||!Array.isArray(d.owned)||typeof d.funds!=="number") throw 0;
+      if(!confirm("현재 진행 상황이 백업 내용으로 덮어써져요. 계속할까요?")) return;
+      localStorage.setItem(KEY,JSON.stringify(d)); S=load(); S.last=Date.now(); derive(); save(); render(); $("#bmsg").textContent="복원 완료!";
+    }catch(e){ msg("백업 형식이 올바르지 않아요."); }
   };
   $("#wipe").onclick=()=>{
-    if(confirm("모든 단어와 학습 기록이 삭제됩니다. 정말 삭제할까요?") && confirm("되돌릴 수 없어요. 마지막 확인입니다.")){
-      db={words:[],log:[]}; save(); quiz=null; render();
+    if(confirm("모든 진행 상황이 삭제됩니다. 정말 삭제할까요?") && confirm("되돌릴 수 없어요. 마지막 확인입니다.")){
+      S=DEF(); idea=null; derive(); save(); tab="lab"; render();
     }
   };
 }
 
-/* ============ 시작 ============ */
+/* ====================== 갱신 ====================== */
+function refresh(){
+  $("#fund").textContent = fmt(S.funds)+"원";
+  $("#cpsline").textContent = `초당 +${fmt(D.cps)}원`;
+  if(tab==="lab"){
+    const cv=$("#clickval"); if(cv) cv.textContent = `1회 +${fmt(D.click)}원`;
+    const g=$("#goal"); if(g){
+      const nxt = ROLES.find(r=>r.id===0||S.owned[r.id-1]>0 ? S.owned[r.id]===0 : false) || null;
+      let html="";
+      const pg=paperGain();
+      if(S.owned[0]===0) html=`<h2>첫 목표</h2><div class="sub">실험을 눌러 연구비를 모아 <b>학부 연구생</b>(${fmt(ROLES[0].base)}원)을 뽑아보세요.</div>`;
+      else if(nxt) html=`<h2>다음 목표</h2><div class="sub"><b>${esc(nxt.name)}</b> 영입까지 ${fmt(Math.max(0,Math.ceil(nxt.base)-S.funds))}원 남았어요.</div>`;
+      else html=`<h2>연구 현황</h2><div class="sub">모든 직급의 연구원이 모였어요. 이제 규모를 키워보세요!</div>`;
+      if(pg>=1) html+=`<div class="sub" style="margin-top:6px">📄 논문 <b>${pg}편</b>을 투고할 수 있어요.</div>`;
+      if(g.dataset.h!==html){ g.innerHTML=html; g.dataset.h=html; }
+    }
+  } else if(tab==="hire"){
+    $$(".seg button").forEach(b=>b.classList.toggle("on", String(buyMode)===b.dataset.m));
+    visibleRoles().forEach(r=>{
+      const i=r.id, k=buyCount(i), c=costFor(i,k);
+      const o=$("#own"+i); if(!o) return;
+      o.textContent = "×"+S.owned[i];
+      $("#rcps"+i).textContent = `개당 초당 +${fmt(D.per[i])} · 합계 +${fmt(D.per[i]*S.owned[i])}`;
+      const b=$("#buy"+i); b.innerHTML = `구매 ×${k}<small>${fmt(c)}원</small>`; b.disabled = S.funds<c;
+    });
+  } else if(tab==="upg"){
+    const list=availUpg(), sig=list.map(u=>u.id).join(",");
+    if(sig!==sigUpg){ viewUpg(); return; }
+    list.forEach(u=>{ const b=$("#u_"+u.id); if(b){ b.innerHTML=`구입<small>${fmt(u.cost)}원</small>`; b.disabled=S.funds<u.cost; } });
+  } else if(tab==="paper"){
+    const g=paperGain();
+    $("#pt").textContent=fmt(S.total)+"원"; $("#pg").textContent=g+"편";
+    const nextNeed = Math.pow(g+1,2)*PAPER_BASE;
+    const prev = g*g*PAPER_BASE;
+    $("#pbar").style.width = Math.min(100,((S.total-prev)/(nextNeed-prev))*100)+"%";
+    $("#pnext").textContent = `다음 1편까지 누적 연구비 ${fmt(nextNeed)}원 (현재 ${fmt(S.total)}원)`;
+    $("#pgo").disabled = g<1;
+  }
+}
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+/* ====================== 시간 진행 ====================== */
+function showOffline(sec, earned){
+  $("#modal").innerHTML = `<div class="modal"><div class="card">
+    <h2>☕ 자리를 비운 사이</h2>
+    <div class="sub">${fmtTime(sec)} 동안 연구실이 돌아갔어요${sec>OFFLINE_CAP?` (최대 ${OFFLINE_CAP/3600}시간까지 정산)`:""}</div>
+    <div class="big">+${fmt(earned)}원</div>
+    <button id="mok" style="width:100%">수령하기</button></div></div>`;
+  $("#mok").onclick=()=>{ $("#modal").innerHTML=""; };
+}
+function tick(){
+  const now=Date.now();
+  let dt=(now-S.last)/1000;
+  S.last=now;
+  if(dt<0 || !isFinite(dt)) dt=0;
+  if(dt>=30){
+    const eff=Math.min(dt,OFFLINE_CAP), earned=D.cps*eff;
+    if(earned>0){ gain(earned); showOffline(dt,earned); }
+  } else if(dt>0){
+    gain(D.cps*dt);
+  }
+  // 연구 아이디어
+  if(idea && now>idea.until){ idea=null; const b=$("#ideaBtn"); if(b) b.remove(); nextIdea=now+(50+Math.random()*70)*1000; }
+  if(!idea && now>=nextIdea && D.cps>0 && tab==="lab"){
+    idea={x:8+Math.random()*78,y:12+Math.random()*50,until:now+12000};
+    placeIdea();
+  }
+  refresh();
+}
+let saveN=0;
+setInterval(()=>{ tick(); if(++saveN%50===0) save(); },100);
+document.addEventListener("visibilitychange",()=>{ if(document.hidden){ save(); } else { tick(); } });
+window.addEventListener("pagehide",save);
+
+/* ====================== 시작 ====================== */
+derive();
 render();
+// 앱을 다시 열었을 때의 오프라인 정산은 첫 tick 에서 처리됩니다.
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }

@@ -1,5 +1,5 @@
-// 오프라인 사용을 위한 서비스 워커. 앱을 수정하면 VERSION 값을 올려주세요.
-const VERSION = "vocab-v1";
+// 오프라인 사용을 위한 서비스 워커. 게임을 수정하면 VERSION 값을 올려주세요.
+const VERSION = "hopelab-v1";
 const FILES = [
   "./",
   "./index.html",
@@ -16,12 +16,11 @@ self.addEventListener("install", e => {
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k.startsWith("hopelab-") && k !== VERSION).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-// 캐시 우선, 없으면 네트워크. 네트워크 성공 시 캐시 갱신.
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
   e.respondWith(
