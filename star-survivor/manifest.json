@@ -1,7 +1,7 @@
 {
   "name": "스타더스트 서바이버",
   "short_name": "스타더스트",
-  "description": "우주에서 10분간 살아남는 자동 공격 서바이벌 게임",
+  "description": "우주에서 30분간 살아남는 자동 공격 서바이벌 게임",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

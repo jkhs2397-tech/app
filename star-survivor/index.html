@@ -112,13 +112,13 @@ const metaCost=(m)=>Math.round(m.base*Math.pow(1.45,SV.meta[m.id]));
 /* 맵 */
 const MAPS=[
   {id:0,name:"지구 궤도",icon:"🌍",desc:"기본 코스",bg:["#060a1c","#150d33"],star:"#bfdbfe",neb:null,
-    mods:{spd:1,hp:1,spawn:1,comet:1,gold:1}},
-  {id:1,name:"성운 지대",icon:"🌌",desc:"적이 더 빠르고 많아요 · 골드 ×1.3",bg:["#12062b","#3b0f4f"],star:"#f5d0fe",neb:["#c026d3","#7c3aed","#db2777"],
-    unlock:"최고 생존 10:00 이상",test:s=>s.best.time>=600,mods:{spd:1.08,hp:1.12,spawn:1.15,comet:1.2,gold:1.3}},
-  {id:2,name:"소행성 벨트",icon:"☄️",desc:"운석 떼와 혜성이 자주 와요 · 골드 ×1.7",bg:["#1a1209","#2d1a0c"],star:"#fde68a",neb:["#b45309","#92400e","#a16207"],
-    unlock:"누적 처치 5,000",test:s=>s.kills>=5000,mods:{spd:1.1,hp:1.25,spawn:1.3,comet:1.8,gold:1.7}},
-  {id:3,name:"블랙홀 변방",icon:"🕳️",desc:"가장 위험한 구역 · 골드 ×2.5",bg:["#010108","#0a0a2e"],star:"#93c5fd",neb:["#1d4ed8","#312e81","#0f172a"],
-    unlock:"30분 생존 성공 1회",test:s=>s.wins>=1,mods:{spd:1.15,hp:1.5,spawn:1.5,comet:2,gold:2.5}}
+    mods:{spd:1,hp:1,spawn:1,comet:1,gold:1,dmg:1}},
+  {id:1,name:"성운 지대",icon:"🌌",desc:"적이 훨씬 빠르고 단단해요 · 골드 ×1.5",bg:["#12062b","#3b0f4f"],star:"#f5d0fe",neb:["#c026d3","#7c3aed","#db2777"],
+    unlock:"최고 생존 10:00 이상",test:s=>s.best.time>=600,mods:{spd:1.12,hp:1.35,spawn:1.25,comet:1.4,gold:1.5,dmg:1.15}},
+  {id:2,name:"소행성 벨트",icon:"☄️",desc:"적이 매우 강하고 혜성이 잦아요 · 골드 ×2.2",bg:["#1a1209","#2d1a0c"],star:"#fde68a",neb:["#b45309","#92400e","#a16207"],
+    unlock:"누적 처치 5,000",test:s=>s.kills>=5000,mods:{spd:1.22,hp:1.85,spawn:1.55,comet:2.2,gold:2.2,dmg:1.35}},
+  {id:3,name:"블랙홀 변방",icon:"🕳️",desc:"극한의 구역 · 골드 ×3.5",bg:["#010108","#0a0a2e"],star:"#93c5fd",neb:["#1d4ed8","#312e81","#0f172a"],
+    unlock:"30분 생존 성공 1회",test:s=>s.wins>=1,mods:{spd:1.32,hp:2.7,spawn:1.9,comet:3,gold:3.5,dmg:1.6}}
 ];
 const mapOpen=m=>!m.test||m.test(SV);
 
@@ -199,11 +199,18 @@ const ETYPE={
   swarmer:{r:6, hp:2,  spd:150,dmg:4,  xp:1, c:"#fde047", c2:"#854d0e", fast:1},
   golem:  {r:24,hp:140,spd:36, dmg:20, xp:12,c:"#78716c", c2:"#292524", poly:10},
   stalker:{r:11,hp:55, spd:135,dmg:12, xp:6, c:"#f472b6", c2:"#831843", fast:1},
+  brute:  {r:15,hp:90, spd:58, dmg:16, xp:8, c:"#fb7185", c2:"#881337", poly:8},
+  wraith: {r:10,hp:48, spd:150,dmg:12, xp:6, c:"#a78bfa", c2:"#4c1d95", fast:1},
+  titan:  {r:30,hp:420,spd:38, dmg:28, xp:30,c:"#57534e", c2:"#1c1917", poly:11},
+  razor:  {r:12,hp:130,spd:142,dmg:18, xp:14,c:"#f87171", c2:"#7f1d1d", fast:1},
+  meteor: {r:13,hp:20, spd:210,dmg:14, xp:2, c:"#fdba74", c2:"#ea580c", fast:1},
   comet:  {r:7, hp:5,  spd:260,dmg:9,  xp:1, c:"#fef9c3", c2:"#facc15", fast:1},
   boss:   {r:40,hp:450,spd:36, dmg:26, xp:20,c:"#ef4444", c2:"#7f1d1d"}
 };
 // [id, 시작(초), 기본 가중치, 분당 증감]
-const SPAWN=[["rock",0,10,-.25],["drone",45,6,0],["big",90,3,.2],["dasher",150,4,.15],["crystal",240,3,.1],["swarmer",300,3,.1],["golem",480,2,.1],["stalker",600,3,.15]];
+// [id, 등장(초), 퇴장(초), 가중치] — 시간대별로 등장 몬스터가 바뀜 (앞뒤 40~60초 페이드)
+const SPAWN=[["rock",0,330,10],["drone",40,420,6],["big",240,720,5],["dasher",300,840,5],["crystal",480,1020,4],["swarmer",540,1140,4],
+  ["golem",720,1320,3],["stalker",840,1500,4],["brute",960,1620,4],["wraith",1080,1800,4],["titan",1260,1800,2],["razor",1380,1800,3]];
 const BOSSES=[
   {name:"행성 포식자",c:"#ef4444",c2:"#7f1d1d",ring:"#fca5a5",hp:450},
   {name:"얼음 거인",c:"#60a5fa",c2:"#1e3a8a",ring:"#bfdbfe",hp:1300},
@@ -218,7 +225,10 @@ const BOSSES=[
 ];
 const BOSS_EVERY=180;       // 3분마다
 const WIN_T=1800;           // 30분
-const ENEMY_CAP=240, HP_SCALE=.25;
+const ENEMY_CAP=240, HP_SCALE=.28, BASE_HP=1.15, BASE_SPD=1.08;
+const BOSS_CD=[4.5,5,6,6,6.5,7,6,6.5,6,3.8];
+const CRISIS=[{at:300,name:"운석 폭풍",dur:30},{at:600,name:"고속 편대 습격",dur:30},{at:900,name:"포위 공세",dur:32},{at:1200,name:"정예 사냥대",dur:32},{at:1500,name:"대혼돈",dur:40}];
+const capNow=()=>ENEMY_CAP+20*G.mp.id;
 const xpNeed=L=>Math.floor(4+L*3+L*L*0.22);
 
 /* ===================== 상태 ===================== */
@@ -231,8 +241,8 @@ function newRun(){
   const ch=getChar(SV.selChar), mp=MAPS[SV.selMap]||MAPS[0];
   G={t:0,kills:0,level:1,xp:0,need:xpNeed(1),px:0,py:0,hp:0,maxHp:0,inv:0,face:1,moving:false,
      weapons:[],passives:{},enemies:[],shots:[],gems:[],parts:[],fx:[],fields:[],
-     spawnT:1,ringT:60,cometT:100,packT:210,bossI:0,rev:SV.meta.rev>0,msg:null,pending:0,st:null,win:false,god:false,
-     ch,mp,bonusGold:0};
+     spawnT:1,ringT:70,cometT:100,packT:210,bossI:0,rev:SV.meta.rev>0,msg:null,pending:0,st:null,win:false,god:false,
+     ch,mp,bonusGold:0,eb:[],zones:[],lasers:[],sched:[],crisis:null,crisisI:0};
   recalc(); G.hp=G.maxHp;
   addWeapon(ch.start);
 }
@@ -305,7 +315,8 @@ function killEnemy(e){
     for(let i=0;i<24;i++) addPart(e.x,e.y,e.col,rnd(2,5),rnd(60,200));
     G.msg={text:"🌍 "+BOSSES[e.bi].name+" 격파!",t:2.5};
   } else {
-    dropGem(e.x,e.y,T.xp);
+    dropGem(e.x,e.y,T.xp*(e.elite?3:1));
+    if(e.elite) dropMed(e.x-6,e.y);
     if(Math.random()<.012) dropMed(e.x+6,e.y);
     if(G.parts.length<160) for(let i=0;i<3;i++) addPart(e.x,e.y,T.c,rnd(1.5,3),rnd(40,110));
   }
@@ -494,6 +505,7 @@ function update(dt){
       e.ang=Math.atan2(dy,dx);
     }
     if(e.flash>0) e.flash-=dt;
+    if(e.type==="boss"){ e.skT-=dt; if(e.skT<=0 && d<560){ castBoss(e,e.bi); e.skT=BOSS_CD[e.bi]*(1-.07*G.mp.id); } }
     e.orbCd-=dt;
     if(e.orbCd<=0){
       for(const s of sats){ const ex=e.x-s.x, ey=e.y-s.y, rr=e.r+7; if(ex*ex+ey*ey<rr*rr){ dealDmg(e,s.dmg); e.orbCd=.4; break; } }
@@ -505,6 +517,7 @@ function update(dt){
     }
   }
   for(let i=G.enemies.length-1;i>=0;i--) if(G.enemies[i].dead){ G.enemies[i]=G.enemies[G.enemies.length-1]; G.enemies.pop(); }
+  updEnemyFx(dt);
   if(G.hp<=0) { onDeath(); return; }
 
   // 구슬
@@ -543,6 +556,7 @@ function onDeath(){
   if(G.rev){
     G.rev=false; G.hp=G.maxHp*.5; G.inv=2.5;
     for(const e of G.enemies){ const dx=e.x-G.px,dy=e.y-G.py; if(dx*dx+dy*dy<240*240 && e.type!=="boss"){ e.dead=true; e.gone=true; } }
+    G.eb.length=0; G.zones.length=0; G.lasers.length=0;
     addRing(G.px,G.py,240,"#86efac",.6);
     G.msg={text:"🛟 비상 탈출 캡슐 작동!",t:2.5};
     return;
@@ -558,9 +572,9 @@ function gainXp(v){
 /* ---- 스폰 ---- */
 function mkEnemy(type,x,y,hpOverride,bi){
   const T=ETYPE[type], M=G.mp.mods;
-  const hm=(1+G.t/60*HP_SCALE)*M.hp;
-  let sm=(1+Math.min(.3,G.t/900*.3))*M.spd; if(T.fast) sm=1+(sm-1)*.4;
-  const e={id:eid++,type,x,y,r:T.r,hp:hpOverride?hpOverride*M.hp:T.hp*hm,spd:T.spd*sm*(1+rnd(-.08,.08)),dmg:T.dmg,
+  const hm=(1+G.t/60*HP_SCALE)*M.hp*BASE_HP;
+  let sm=(1+Math.min(.45,G.t/900*.45))*M.spd*BASE_SPD; if(T.fast) sm=1+(sm-1)*.35;
+  const e={id:eid++,type,x,y,r:T.r,hp:hpOverride?hpOverride*M.hp:T.hp*hm,spd:T.spd*sm*(1+rnd(-.08,.08)),dmg:T.dmg*M.dmg,skT:3.5,
     flash:0,orbCd:0,dead:false,wob:rnd(0,6.28),ang:0,poly:null,col:T.c,straight:false,vx:0,vy:0,bi:bi||0,chT:3,charge:0};
   e.mhp=e.hp;
   if(T.poly){ e.poly=[]; for(let i=0;i<T.poly;i++){ const a=i/T.poly*6.283; const rr=T.r*rnd(.78,1.1); e.poly.push([Math.cos(a)*rr,Math.sin(a)*rr]); } }
@@ -572,9 +586,20 @@ function edgePos(extra=30){
 }
 function pickType(){
   let tot=0; const av=[];
-  for(const [id,s,w0,g] of SPAWN){ if(G.t>=s){ const w=Math.max(1,w0+g*(G.t-s)/60); av.push([id,w]); tot+=w; } }
+  for(const [id,s0,en,w0] of SPAWN){
+    if(G.t<s0||G.t>=en+60) continue;
+    let w=w0; if(G.t<s0+40) w*=(G.t-s0)/40; else if(G.t>en) w*=1-(G.t-en)/60;
+    if(w>.05){ av.push([id,w]); tot+=w; }
+  }
   let r=Math.random()*tot; for(const [id,w] of av){ r-=w; if(r<=0) return id; }
-  return "rock";
+  return av.length?av[av.length-1][0]:"rock";
+}
+function fastType(){
+  const t=G.t, r=Math.random();
+  if(t<420) return "dasher";
+  if(t<900) return r<.5?"dasher":"stalker";
+  if(t<1300) return r<.4?"stalker":r<.75?"wraith":"razor";
+  return r<.3?"stalker":r<.6?"wraith":"razor";
 }
 function spawnComets(){
   const M=G.mp.mods, n=Math.round((10+G.t/100)), ang=Math.random()*6.283, d=Math.hypot(VW,VH)/2+40;
@@ -587,7 +612,7 @@ function spawnComets(){
 }
 function spawnPack(){
   const [x,y]=edgePos(40), n=8+Math.floor(G.t/150);
-  for(let i=0;i<n;i++) mkEnemy(Math.random()<.5&&G.t>500?"stalker":"dasher",x+rnd(-40,40),y+rnd(-40,40));
+  for(let i=0;i<n;i++) mkEnemy(fastType(),x+rnd(-40,40),y+rnd(-40,40));
   G.msg={text:"⚡ 고속 편대 접근!",t:2.2};
 }
 function spawnDirector(dt){
@@ -596,7 +621,7 @@ function spawnDirector(dt){
   if(G.spawnT<=0){
     G.spawnT=Math.max(.09,1.0-G.t/700*.85)/M.spawn;
     const batch=1+Math.floor(G.t/130);
-    for(let i=0;i<batch && G.enemies.length<ENEMY_CAP;i++){
+    for(let i=0;i<batch && G.enemies.length<capNow();i++){
       const [x,y]=edgePos(), t=pickType();
       if(t==="swarmer"){ for(let k=0;k<6;k++) mkEnemy(t,x+rnd(-30,30),y+rnd(-30,30)); }
       else mkEnemy(t,x,y);
@@ -605,15 +630,98 @@ function spawnDirector(dt){
   if(G.t>=G.ringT){
     G.ringT+=80; G.msg={text:"⚠ 적 무리 포위!",t:2.5};
     const d=Math.hypot(VW,VH)/2+40, n=26;
-    for(let i=0;i<n && G.enemies.length<ENEMY_CAP+40;i++){ const a=i/n*6.283; mkEnemy(G.t>900?"crystal":G.t>150?"drone":"rock",G.px+Math.cos(a)*d,G.py+Math.sin(a)*d); }
+    for(let i=0;i<n && G.enemies.length<capNow()+40;i++){ const a=i/n*6.283; mkEnemy(pickType(),G.px+Math.cos(a)*d,G.py+Math.sin(a)*d); }
   }
   if(G.t>=G.cometT){ G.cometT+=70/M.comet; spawnComets(); }
   if(G.t>=G.packT){ G.packT+=140; spawnPack(); }
   if(G.bossI<BOSSES.length && G.t>=BOSS_EVERY*(G.bossI+1)){
     const b=BOSSES[G.bossI], [x,y]=edgePos(60);
     const e=mkEnemy("boss",x,y,b.hp,G.bossI);
-    e.col=b.c; e.dmg=20+G.bossI*4; e.spd=ETYPE.boss.spd+G.bossI*2.5;
+    e.col=b.c; e.dmg=(20+G.bossI*4)*M.dmg; e.spd=ETYPE.boss.spd+G.bossI*2.5;
     G.bossI++; G.msg={text:"🌍 "+b.name+" 출현!",t:3};
+  }
+  if(!G.crisis && G.crisisI<CRISIS.length && G.t>=CRISIS[G.crisisI].at){
+    G.crisis=Object.assign({k:G.crisisI,t:0,warn:4,on:false,a:0,b:1,d:3,e:0},CRISIS[G.crisisI]); G.crisisI++;
+    try{ navigator.vibrate&&navigator.vibrate([80,60,80]); }catch(e){}
+  }
+  if(G.crisis) updCrisis(dt);
+}
+function spawnMeteor(){
+  const [x,y]=edgePos(30), a=Math.atan2(G.py-y+rnd(-90,90),G.px-x+rnd(-90,90));
+  const e=mkEnemy("meteor",x,y); e.straight=true; e.vx=Math.cos(a)*ETYPE.meteor.spd*G.mp.mods.spd; e.vy=Math.sin(a)*ETYPE.meteor.spd*G.mp.mods.spd; e.ang=a;
+}
+function updCrisis(dt){
+  const c=G.crisis, k=c.k; c.t+=dt;
+  if(c.t<c.warn) return;
+  if(!c.on){
+    c.on=true;
+    G.msg={text:"🔥 "+c.name+"!",t:2.5};
+    if(k===3||k===4){ for(let i=0;i<(k===3?6:8);i++){ const [x,y]=edgePos(40), e=mkEnemy(pickType(),x,y); e.elite=1; e.hp*=4; e.mhp=e.hp; e.r*=1.3; e.dmg*=1.3; } }
+  }
+  const el=c.t-c.warn;
+  if(el>=c.dur){
+    G.crisis=null; G.msg={text:"✅ 고비 돌파! 보상 획득",t:3};
+    for(let i=0;i<24;i++){ const a=Math.random()*6.283, d=rnd(20,90); dropGem(G.px+Math.cos(a)*d,G.py+Math.sin(a)*d,3+k*2); }
+    dropMed(G.px+20,G.py); G.bonusGold+=100*(k+1); addRing(G.px,G.py,200,"#86efac",.7);
+    return;
+  }
+  const cap=capNow()+60;
+  if(k===0||k===4){ c.a-=dt; if(c.a<=0){ c.a=k===4?.22:.3; spawnMeteor(); if(k===4) spawnMeteor(); } }
+  if(k===1||k===4){ c.b-=dt; if(c.b<=0){ c.b=4.2; const [x,y]=edgePos(40), n=7+Math.floor(G.t/250); for(let i=0;i<n&&G.enemies.length<cap;i++) mkEnemy(fastType(),x+rnd(-40,40),y+rnd(-40,40)); } }
+  if(k===2||k===4){ c.d-=dt; if(c.d<=0){ c.d=6; const d=Math.hypot(VW,VH)/2+40, n=32; for(let i=0;i<n&&G.enemies.length<cap;i++){ const a=i/n*6.283; mkEnemy(pickType(),G.px+Math.cos(a)*d,G.py+Math.sin(a)*d); } } }
+  if(k===3||k===4){ c.e-=dt; if(c.e<=0){ c.e=.55; for(let i=0;i<3&&G.enemies.length<cap;i++){ const [x,y]=edgePos(); mkEnemy(pickType(),x,y); } } }
+}
+
+/* ---- 보스 원거리 스킬 ---- */
+function later(t,fn){ G.sched.push({t,fn}); }
+function eShot(x,y,a,sp,dmg,r,c,o){ const b={x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,dmg,r:r||6,c:c||"#fb7185",life:7,home:0}; if(o) Object.assign(b,o); G.eb.push(b); }
+function addZone(x,y,r,delay,dmg,c){ G.zones.push({x,y,r,t:0,delay,dmg,c:c||"#f97316"}); }
+function addLaser(x,y,a,delay,dmg){ G.lasers.push({x,y,a,t:0,delay,dmg,hit:false}); }
+function castBoss(e,sk){
+  const M=G.mp.mods, D=(10+e.bi*2.5)*M.dmg, a=Math.atan2(G.py-e.y,G.px-e.x);
+  if(sk===9) sk=Math.floor(Math.random()*9);
+  switch(sk){
+    case 0: for(let k=-1;k<=1;k++) eShot(e.x,e.y,a+k*.28,190,D); break;
+    case 1: for(let i=0;i<10;i++) eShot(e.x,e.y,i/10*6.283+a,150,D,6,"#93c5fd"); break;
+    case 2: for(let i=0;i<3;i++){ const o=i?90:0; addZone(G.px+rnd(-o,o),G.py+rnd(-o,o),46,1.1,D*1.6,"#f97316"); } break;
+    case 3: for(let k=-1;k<=1;k+=2) eShot(e.x,e.y,a+k*.6,110,D,9,"#d8b4fe",{home:1.6,life:6}); break;
+    case 4: for(let k=-1;k<=1;k++) addLaser(e.x,e.y,a+k*.5,1.0,D*1.5); break;
+    case 5: for(let i=0;i<30;i++) later(i*.08,()=>{ if(!e.dead) eShot(e.x,e.y,i*.55,140,D,6,"#a78bfa"); }); break;
+    case 6: for(let i=0;i<6;i++) later(i*.2,()=>addZone(G.px+rnd(-200,200),G.py+rnd(-200,200),38,1.2,D*1.6,"#facc15")); break;
+    case 7: for(let r=0;r<2;r++) later(r*.45,()=>{ if(!e.dead) for(let i=0;i<12;i++) eShot(e.x,e.y,i/12*6.283+r*.26,150,D,6,"#86efac"); }); break;
+    case 8: for(let i=0;i<8;i++) later(i*.12,()=>{ if(!e.dead) eShot(e.x,e.y,Math.atan2(G.py-e.y,G.px-e.x),230,D,5,"#f9a8d4"); }); break;
+  }
+  addRing(e.x,e.y,e.r+30,"#fff",.3);
+}
+function updEnemyFx(dt){
+  for(let i=G.sched.length-1;i>=0;i--){ const q=G.sched[i]; q.t-=dt; if(q.t<=0){ G.sched[i]=G.sched[G.sched.length-1]; G.sched.pop(); q.fn(); } }
+  const far=(VW+VH)*1.2;
+  for(let i=G.eb.length-1;i>=0;i--){
+    const b=G.eb[i]; b.life-=dt;
+    if(b.home>0){ const sp=Math.hypot(b.vx,b.vy), ca=Math.atan2(b.vy,b.vx), ta=Math.atan2(G.py-b.y,G.px-b.x);
+      let da=ta-ca; while(da>Math.PI) da-=6.283; while(da<-Math.PI) da+=6.283;
+      const na=ca+clamp(da,-b.home*dt,b.home*dt); b.vx=Math.cos(na)*sp; b.vy=Math.sin(na)*sp; }
+    b.x+=b.vx*dt; b.y+=b.vy*dt;
+    const dx=b.x-G.px, dy=b.y-G.py; let rm=b.life<=0||dx*dx+dy*dy>far*far;
+    if(!rm && G.inv<=0 && dx*dx+dy*dy<(b.r+7)*(b.r+7)){ hurt(b.dmg); rm=true; }
+    if(rm){ G.eb[i]=G.eb[G.eb.length-1]; G.eb.pop(); }
+  }
+  for(let i=G.zones.length-1;i>=0;i--){
+    const z=G.zones[i]; z.t+=dt;
+    if(z.t>=z.delay){
+      const dx=z.x-G.px, dy=z.y-G.py;
+      if(G.inv<=0 && dx*dx+dy*dy<(z.r+6)*(z.r+6)) hurt(z.dmg);
+      addRing(z.x,z.y,z.r,z.c,.35); for(let k=0;k<6;k++) addPart(z.x,z.y,z.c,3,110);
+      G.zones[i]=G.zones[G.zones.length-1]; G.zones.pop();
+    }
+  }
+  for(let i=G.lasers.length-1;i>=0;i--){
+    const l=G.lasers[i]; l.t+=dt;
+    if(l.t>=l.delay && l.t<l.delay+.35 && !l.hit && G.inv<=0){
+      const ux=Math.cos(l.a), uy=Math.sin(l.a), px=G.px-l.x, py=G.py-l.y, proj=px*ux+py*uy;
+      if(proj>0 && proj<1400 && Math.abs(px*uy-py*ux)<20){ hurt(l.dmg); l.hit=true; }
+    }
+    if(l.t>l.delay+.35){ G.lasers[i]=G.lasers[G.lasers.length-1]; G.lasers.pop(); }
   }
 }
 
@@ -771,7 +879,8 @@ function showHelp(){
     <p style="margin-top:0"><b>이동</b>: 화면을 터치한 채 드래그하면 가상 조이스틱이 나와요. (PC: 방향키 / WASD)</p>
     <p><b>공격</b>: 모든 무기는 자동으로 발사돼요.</p>
     <p><b>레벨업</b>: 경험치 구슬을 모으면 무기(최대 5종, 8레벨)나 장비(최대 5종)를 고를 수 있어요.</p>
-    <p><b>목표</b>: 30:00 까지 생존하면 구조선이 도착해요. 3분마다 보스가 나타나고, 혜성 떼·고속 편대·적 무리 포위 같은 이벤트가 주기적으로 와요.</p>
+    <p><b>목표</b>: 30:00 까지 생존하면 구조선이 도착해요. 3분마다 보스가 나타나요. 보스는 저마다 다른 원거리 공격(탄막·폭발 장판·레이저)을 써요. 붉은 경고 표시를 보고 피하세요!</p>
+    <p><b>고비</b>: 5분마다 ⚠WARNING이 뜨고 30초 이상 큰 위기가 와요. 버티면 보상(경험치·회복·보너스 골드)을 받아요. 시간이 지날수록 나오는 몬스터 종류도 바뀌어요.</p>
     <p><b>해금</b>: 맵은 기록을 달성하면, 대원은 골드로 구매하거나 기록을 달성하면 열려요. 출격 준비 화면에서 확인하세요.</p>
     <p style="margin-bottom:0"><b>골드</b>: 한 판이 끝나면 골드를 받고(맵이 어려울수록 배율↑), 영구 강화와 대원 해금에 써요.</p></div>
     <button class="b sec" id="bback">← 돌아가기</button></div>`;
@@ -876,6 +985,28 @@ function drawEnemy(e){
       ctx.strokeStyle=gr; ctx.lineWidth=9; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-tx*34,y-ty*34); ctx.stroke(); ctx.lineCap="butt";
       ctx.fillStyle=f?"#fff":"#fef9c3"; ctx.beginPath(); ctx.arc(x,y,e.r,0,6.283); ctx.fill();
       break; }
+    case "brute": case "titan":
+      poly(e.poly,x,y,e.wob*.3); ctx.fill(); ctx.stroke();
+      if(!f){ ctx.fillStyle=e.type==="titan"?"#ef4444":"#fde68a"; const k=e.r*.28; ctx.beginPath(); ctx.arc(x-k,y-k*.5,e.r*.13,0,6.283); ctx.arc(x+k,y-k*.5,e.r*.13,0,6.283); ctx.fill();
+        if(e.type==="titan"){ ctx.strokeStyle="#ef4444"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,e.r*.62,0,6.283); ctx.stroke(); } }
+      break;
+    case "wraith":{
+      const a=e.ang, tx=Math.cos(a), ty=Math.sin(a);
+      ctx.globalAlpha=f?1:.75; ctx.beginPath(); ctx.arc(x,y,e.r,0,6.283); ctx.fill(); ctx.stroke();
+      if(!f){ ctx.fillStyle="rgba(167,139,250,.35)"; ctx.beginPath(); ctx.arc(x-tx*e.r*1.2,y-ty*e.r*1.2,e.r*.8,0,6.283); ctx.arc(x-tx*e.r*2.2,y-ty*e.r*2.2,e.r*.55,0,6.283); ctx.fill();
+        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(x+tx*3-ty*3,y+ty*3+tx*3,1.8,0,6.283); ctx.arc(x+tx*3+ty*3,y+ty*3-tx*3,1.8,0,6.283); ctx.fill(); }
+      ctx.globalAlpha=1; break; }
+    case "razor":{
+      const pts=[]; for(let i=0;i<8;i++){ const rr=i%2?e.r*.45:e.r*1.15, a=i/8*6.283+e.wob*2+G.t*6; pts.push([Math.cos(a)*rr,Math.sin(a)*rr]); }
+      poly(pts,x,y,0); ctx.fill(); ctx.stroke();
+      if(!f){ ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(x,y,2.6,0,6.283); ctx.fill(); }
+      break; }
+    case "meteor":{
+      const a=e.ang, tx=Math.cos(a), ty=Math.sin(a);
+      const gr=ctx.createLinearGradient(x,y,x-tx*46,y-ty*46); gr.addColorStop(0,"rgba(249,115,22,.9)"); gr.addColorStop(1,"rgba(249,115,22,0)");
+      ctx.strokeStyle=gr; ctx.lineWidth=e.r*1.4; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-tx*46,y-ty*46); ctx.stroke(); ctx.lineCap="butt";
+      ctx.fillStyle=f?"#fff":"#78350f"; ctx.strokeStyle=f?"#fff":"#fdba74"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x,y,e.r,0,6.283); ctx.fill(); ctx.stroke();
+      break; }
     case "boss":{
       const B=BOSSES[e.bi];
       ctx.fillStyle=f?"#fff":B.c; ctx.strokeStyle=f?"#fff":B.c2; ctx.lineWidth=3;
@@ -886,9 +1017,11 @@ function drawEnemy(e){
         ctx.fillStyle="#1c0a0a"; ctx.beginPath(); ctx.arc(x-12+Math.cos(e.ang)*2,y-6+Math.sin(e.ang)*2,2.6,0,6.283); ctx.arc(x+12+Math.cos(e.ang)*2,y-6+Math.sin(e.ang)*2,2.6,0,6.283); ctx.fill();
         ctx.strokeStyle="#1c0a0a"; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x,y+14,12,.15*Math.PI,.85*Math.PI); ctx.stroke();
         if(e.charge>0){ ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x,y,e.r+6,0,6.283); ctx.stroke(); }
+        if(e.skT<.6){ ctx.strokeStyle="rgba(251,113,133,.9)"; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(x,y,e.r+10+Math.sin(G.t*30)*3,0,6.283); ctx.stroke(); }
       }
       break; }
   }
+  if(e.elite){ ctx.strokeStyle="#fde047"; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(x,y,e.r+4,0,6.283); ctx.stroke(); }
 }
 function drawPlayer(tm){
   const x=G.px,y=G.py,f=G.face, ch=G.ch;
@@ -934,6 +1067,23 @@ function draw(){
     else if(s.k==="m"){ const a=Math.atan2(s.vy,s.vx); ctx.fillStyle="#fb923c"; poly([[7,0],[-5,-3.5],[-5,3.5]],s.x,s.y,a); ctx.fill(); ctx.fillStyle="rgba(253,186,116,.5)"; ctx.beginPath(); ctx.arc(s.x-Math.cos(a)*8,s.y-Math.sin(a)*8,3,0,6.283); ctx.fill(); }
     else { ctx.strokeStyle="#67e8f9"; ctx.lineWidth=4; ctx.lineCap="round"; ctx.beginPath(); ctx.arc(s.x,s.y,8,s.rot,s.rot+2.4); ctx.stroke(); ctx.lineCap="butt"; }
   }
+  for(const z of G.zones){
+    const k=clamp(z.t/z.delay,0,1);
+    ctx.fillStyle=`rgba(239,68,68,${.12+.25*k})`; ctx.beginPath(); ctx.arc(z.x,z.y,z.r,0,6.283); ctx.fill();
+    ctx.strokeStyle=z.c; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(z.x,z.y,z.r,0,6.283); ctx.stroke();
+    ctx.beginPath(); ctx.arc(z.x,z.y,z.r*k,0,6.283); ctx.stroke();
+  }
+  for(const l of G.lasers){
+    const ux=Math.cos(l.a), uy=Math.sin(l.a), on=l.t>=l.delay;
+    ctx.strokeStyle=on?"rgba(254,240,138,.95)":"rgba(239,68,68,.45)"; ctx.lineWidth=on?18:2.5;
+    ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(l.x+ux*1400,l.y+uy*1400); ctx.stroke();
+    if(on){ ctx.strokeStyle="#fff"; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(l.x+ux*1400,l.y+uy*1400); ctx.stroke(); }
+  }
+  for(const b of G.eb){
+    if(b.x<L||b.x>R||b.y<T||b.y>B) continue;
+    ctx.fillStyle=b.c; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,6.283); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(b.x,b.y,b.r*.45,0,6.283); ctx.fill();
+  }
   drawPlayer(tm);
   for(const f of G.fx){
     const k=f.t/f.life;
@@ -970,6 +1120,20 @@ function drawHUD(tm){
     ctx.fillStyle="rgba(10,16,48,.8)"; ctx.fillRect(bx,by,bw,10); ctx.fillStyle="#ef4444"; ctx.fillRect(bx,by,bw*clamp(boss.hp/boss.mhp,0,1),10);
     ctx.strokeStyle="#7f1d1d"; ctx.strokeRect(bx+.5,by+.5,bw-1,9);
     ctx.font="bold 11px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#fff"; ctx.fillText(BOSSES[boss.bi].name,W/2,by+22); }
+  const cr=G.crisis;
+  if(cr){
+    if(cr.t<cr.warn){
+      const p=.5+.5*Math.sin(cr.t*8), g=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.25,W/2,H/2,Math.max(W,H)*.7);
+      g.addColorStop(0,"rgba(239,68,68,0)"); g.addColorStop(1,`rgba(239,68,68,${.25+.3*p})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      ctx.textAlign="center"; ctx.lineWidth=5; ctx.strokeStyle="rgba(0,0,0,.7)";
+      ctx.globalAlpha=.55+.45*p; ctx.font="900 34px sans-serif"; ctx.fillStyle="#fecaca"; ctx.strokeText("⚠ WARNING ⚠",W/2,H*.36); ctx.fillText("⚠ WARNING ⚠",W/2,H*.36);
+      ctx.font="bold 16px sans-serif"; ctx.fillStyle="#fff"; ctx.strokeText(cr.name+" 접근 중…",W/2,H*.36+30); ctx.fillText(cr.name+" 접근 중…",W/2,H*.36+30); ctx.globalAlpha=1;
+    } else {
+      const bw=W*.5, bx=(W-bw)/2, by=boss?100:58, r=clamp(1-(cr.t-cr.warn)/cr.dur,0,1);
+      ctx.fillStyle="rgba(10,16,48,.8)"; ctx.fillRect(bx,by,bw,8); ctx.fillStyle="#f59e0b"; ctx.fillRect(bx,by,bw*r,8);
+      ctx.font="bold 11px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#fde68a"; ctx.fillText("🔥 "+cr.name+" · "+Math.ceil(cr.dur-(cr.t-cr.warn))+"s",W/2,by+19);
+    }
+  }
   if(G.msg){ ctx.globalAlpha=clamp(G.msg.t,0,1); ctx.font="bold 20px sans-serif"; ctx.textAlign="center"; ctx.fillStyle="#fde68a"; ctx.strokeStyle="rgba(0,0,0,.6)"; ctx.lineWidth=4; ctx.strokeText(G.msg.text,W/2,H*.3); ctx.fillText(G.msg.text,W/2,H*.3); ctx.globalAlpha=1; }
   if(joy.on){
     ctx.strokeStyle="rgba(186,230,253,.45)"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(joy.ox,joy.oy,56,0,6.283); ctx.stroke();
