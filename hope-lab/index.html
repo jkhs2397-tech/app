@@ -62,6 +62,13 @@ textarea{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid va
 @keyframes rise{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-60px)}}
 .idea{position:absolute;font-size:38px;background:none;padding:0;border-radius:50%;animation:pulse 1s infinite;z-index:4;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
 @keyframes pulse{50%{transform:scale(1.18)}}
+.scene3d{padding:0;height:min(50vh,390px);min-height:320px;background:linear-gradient(#fff1f2,#e0f2fe)}
+#gl{position:absolute;inset:0}
+.modebtn{position:absolute;top:8px;right:8px;z-index:5;padding:5px 10px;font-size:12px;background:rgba(255,255,255,.85);color:var(--pri);border:1px solid var(--line)}
+.expbtn{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;padding:10px 22px;font-size:16px;box-shadow:0 3px 10px rgba(0,0,0,.18);white-space:nowrap}
+.expbtn small{display:block;font-weight:600;font-size:11px;opacity:.9}
+.tip{position:absolute;z-index:6;background:rgba(19,35,43,.92);color:#fff;font-size:12px;padding:6px 10px;border-radius:10px;pointer-events:none;transform:translate(-50%,-120%);white-space:nowrap}
+.hint3{position:absolute;left:10px;top:10px;z-index:5;font-size:11px;color:#475569;background:rgba(255,255,255,.7);padding:3px 8px;border-radius:8px;pointer-events:none}
 .empty{color:var(--sub);text-align:center;padding:18px 6px;width:100%}
 
 /* 목록 */
@@ -93,6 +100,8 @@ textarea{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid va
 <nav class="tabs" id="tabs"></nav>
 <div id="modal"></div>
 
+<script src="three.min.js"></script>
+<script src="lab3d.js"></script>
 <script>
 "use strict";
 /* ====================== 데이터 ====================== */
@@ -265,17 +274,55 @@ $("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(
 
 function render(){
   renderTabs();
+  if(window.Lab3D&&Lab3D.detach) Lab3D.detach();
   ({lab:viewLab,hire:viewHire,upg:viewUpg,paper:viewPaper,set:viewSet})[tab]();
   window.scrollTo(0,0);
   refresh();
 }
 
 /* ---- 연구실 ---- */
+function mode3d(){ try{ return localStorage.getItem("hopelab.mode")!=="2d"; }catch(e){ return true; } }
+function setMode(m){ try{ localStorage.setItem("hopelab.mode",m); }catch(e){} render(); }
+function experiment(cx,cy){
+  const v=D.click; gain(v); S.clicks++;
+  const scene=$("#scene"); if(scene){ const rc=scene.getBoundingClientRect(); floatText(scene,cx-rc.left,cy-rc.top-14,"+"+fmt(v)); }
+  refresh();
+}
+let tipT=0;
+function showTip(txt,cx,cy){
+  const scene=$("#scene"), t=$("#tip"); if(!scene||!t) return;
+  const rc=scene.getBoundingClientRect(); t.textContent=txt; t.style.left=Math.max(70,Math.min(rc.width-70,cx-rc.left))+"px"; t.style.top=(cy-rc.top)+"px"; t.style.display="block";
+  clearTimeout(tipT); tipT=setTimeout(()=>{ t.style.display="none"; },2600);
+}
+function viewLab3D(){
+  $("#app").innerHTML=`
+    <div class="scene scene3d" id="scene">
+      <div id="gl"></div>
+      <div class="hint3">드래그: 회전 · 두 손가락: 확대 · 캐릭터를 눌러보세요</div>
+      <button class="modebtn sec" id="mode2d">2D 절전</button>
+      <button class="expbtn" id="expbtn">🧪 실험하기<small id="clickval"></small></button>
+      <div class="tip" id="tip" style="display:none"></div>
+    </div>
+    <div class="card" id="goal"></div>`;
+  $("#mode2d").onclick=()=>setMode("2d");
+  const exp=$("#expbtn");
+  exp.addEventListener("pointerdown",ev=>{ ev.preventDefault(); Lab3D.jumpPI(); experiment(ev.clientX,ev.clientY); });
+  Lab3D.onPI=(cx,cy)=>experiment(cx,cy);
+  Lab3D.onMate=(id,cx,cy)=>{ const r=ROLES[id]; showTip(`${r.name} ×${S.owned[id]} · 개당 +${fmt(D.per[id])}/초`,cx,cy); };
+  Lab3D.attach($("#gl"));
+  Lab3D.sync({owned:S.owned,upg:S.upg,roles:ROLES,pi:PI});
+  if(idea) placeIdea();
+}
 function viewLab(){
+  if(mode3d() && window.Lab3D && Lab3D.init()){ viewLab3D(); return; }
+  viewLab2D();
+}
+function viewLab2D(){
   const owned = ROLES.filter(r=>S.owned[r.id]>0);
   $("#app").innerHTML = `
     <div class="scene" id="scene">
       <div class="sign">HOPE LAB</div>
+      ${window.Lab3D&&Lab3D.ok!==false?'<button class="modebtn sec" id="mode3d">3D 보기</button>':""}
       <div class="pi" id="pi">${avatar(PI)}</div>
       <div class="hint">🧪 눌러서 실험하기<small id="clickval"></small></div>
       <div class="crew" id="crew">${
@@ -284,6 +331,7 @@ function viewLab(){
       <div class="bench"></div>
     </div>
     <div class="card" id="goal"></div>`;
+  const m3=$("#mode3d"); if(m3) m3.onclick=()=>setMode("3d");
   const pi=$("#pi"), scene=$("#scene");
   pi.addEventListener("pointerdown",ev=>{
     ev.preventDefault();
@@ -449,6 +497,7 @@ function refresh(){
   $("#fund").textContent = fmt(S.funds)+"원";
   $("#cpsline").textContent = `초당 +${fmt(D.cps)}원`;
   if(tab==="lab"){
+    if($("#gl")) Lab3D.sync({owned:S.owned,upg:S.upg,roles:ROLES,pi:PI});
     const cv=$("#clickval"); if(cv) cv.textContent = `1회 +${fmt(D.click)}원`;
     const g=$("#goal"); if(g){
       const nxt = ROLES.find(r=>r.id===0||S.owned[r.id-1]>0 ? S.owned[r.id]===0 : false) || null;
