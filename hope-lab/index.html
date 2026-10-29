@@ -69,6 +69,13 @@ textarea{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid va
 .expbtn small{display:block;font-weight:600;font-size:11px;opacity:.9}
 .tip{position:absolute;z-index:6;background:rgba(19,35,43,.92);color:#fff;font-size:12px;padding:6px 10px;border-radius:10px;pointer-events:none;transform:translate(-50%,-120%);white-space:nowrap}
 .hint3{position:absolute;left:10px;top:10px;z-index:5;font-size:11px;color:#475569;background:rgba(255,255,255,.7);padding:3px 8px;border-radius:8px;pointer-events:none}
+.mbar{height:7px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:5px;flex:1}
+.mbar i{display:block;height:100%}
+.nd{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}.nd span{width:84px;color:var(--sub)}.nd b{width:28px;text-align:right}
+.lg{font-size:13px;padding:5px 0;border-bottom:1px solid var(--line)}.lg:last-child{border:0}.lg.bad{color:#dc2626}.lg.good{color:var(--ok)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(19,35,43,.94);color:#fff;padding:8px 16px;border-radius:12px;font-size:14px;z-index:30}
+.night{position:absolute;inset:0;background:#0b1b4a;mix-blend-mode:multiply;pointer-events:none;z-index:2;opacity:0;transition:opacity .8s}
+.alert{display:flex;gap:8px;align-items:center;padding:6px 0;font-size:14px}.alert .grow{color:#dc2626;font-weight:700}
 .empty{color:var(--sub);text-align:center;padding:18px 6px;width:100%}
 
 /* 목록 */
@@ -99,6 +106,7 @@ textarea{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid va
 <div id="app"></div>
 <nav class="tabs" id="tabs"></nav>
 <div id="modal"></div>
+<div class="toast" id="toast" style="display:none"></div>
 
 <script src="three.min.js"></script>
 <script src="lab3d.js"></script>
@@ -154,7 +162,8 @@ const PAPER_BONUS = 0.10;     // 논문 1편당 수익 보너스
 
 /* ====================== 저장/상태 ====================== */
 const KEY = "hopelab.v1";
-const DEF = ()=>({funds:0,total:0,allTime:0,owned:ROLES.map(()=>0),upg:{},papers:0,clicks:0,prestiges:0,last:Date.now(),started:Date.now()});
+const JOBS_OK=["work","eat","sleep","brk","wander","chat"];
+const DEF = ()=>({funds:0,total:0,allTime:0,owned:ROLES.map(()=>0),upg:{},papers:0,clicks:0,prestiges:0,last:Date.now(),started:Date.now(),cid:0,crew:[],w:{clock:100,evT:90,broken:[],black:0,fixT:40,log:[],nextName:null,socT:30}});
 function load(){
   try{
     const s = JSON.parse(localStorage.getItem(KEY));
@@ -164,6 +173,12 @@ function load(){
       while(o.owned.length<ROLES.length) o.owned.push(0);
       ["funds","total","allTime","papers","clicks","prestiges"].forEach(k=>{ if(!isFinite(o[k])||o[k]<0) o[k]=0; });
       if(!isFinite(o.last)) o.last=Date.now();
+      const dw=DEF().w; o.w=Object.assign(dw,o.w&&typeof o.w==="object"?o.w:{});
+      ["clock","evT","black","fixT","socT"].forEach(k=>{ if(!isFinite(o.w[k])) o.w[k]=dw[k]; });
+      if(!Array.isArray(o.w.broken)) o.w.broken=[]; if(!Array.isArray(o.w.log)) o.w.log=[];
+      if(!Array.isArray(o.crew)) o.crew=[]; if(!isFinite(o.cid)) o.cid=0;
+      o.crew=o.crew.filter(c=>c&&isFinite(c.role)&&c.role>=0&&c.role<ROLES.length&&Array.isArray(c.tr)&&typeof c.name==="string");
+      o.crew.forEach(c=>{ if(!Array.isArray(c.th)) c.th=[]; ["mood","en","hu"].forEach(k=>{ if(!isFinite(c[k])) c[k]=70; }); if(!JOBS_OK.includes(c.job)) c.job="work"; c.force=c.force||null; c.jt=isFinite(c.jt)?c.jt:0; });
       return o;
     }
   }catch(e){}
@@ -192,7 +207,7 @@ function derive(){
   }
   const paperM = 1 + PAPER_BONUS*S.papers;
   let cps = 0;
-  const per = ROLES.map((r,i)=>{ const p = r.cps*resM[i]*allM*paperM; cps += p*S.owned[i]; return p; });
+  const per = ROLES.map((r,i)=>{ const p = r.cps*resM[i]*allM*paperM; cps += p*S.owned[i]*(FACT[i]||1)*evMult(); return p; });
   D = {cps, per, paperM, click: clickM*paperM + cps*cpsPct};
 }
 function gain(v){ S.funds+=v; S.total+=v; S.allTime+=v; }
@@ -266,7 +281,7 @@ let idea = null;           // {x,y,until}
 let nextIdea = Date.now() + 40000;
 let sigUpg = "";
 
-const TABS=[["lab","🧪","연구실"],["hire","🧑‍🔬","인력"],["upg","🔬","장비"],["paper","📄","논문"],["set","⚙️","설정"]];
+const TABS=[["lab","🧪","연구실"],["crew","👥","연구원"],["hire","🧑‍🔬","인력"],["upg","🔬","장비"],["paper","📄","논문"],["set","⚙️","설정"]];
 function renderTabs(){
   $("#tabs").innerHTML = TABS.map(t=>`<button data-t="${t[0]}" class="${tab===t[0]?"on":""}"><span>${t[1]}</span>${t[2]}${t[0]==="paper"&&paperGain()>=1?'<i class="dot"></i>':""}</button>`).join("");
 }
@@ -275,7 +290,7 @@ $("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(
 function render(){
   renderTabs();
   if(window.Lab3D&&Lab3D.detach) Lab3D.detach();
-  ({lab:viewLab,hire:viewHire,upg:viewUpg,paper:viewPaper,set:viewSet})[tab]();
+  ({lab:viewLab,crew:viewCrew,hire:viewHire,upg:viewUpg,paper:viewPaper,set:viewSet})[tab]();
   window.scrollTo(0,0);
   refresh();
 }
@@ -298,21 +313,28 @@ function viewLab3D(){
   $("#app").innerHTML=`
     <div class="scene scene3d" id="scene">
       <div id="gl"></div>
-      <div class="hint3">드래그: 회전 · 두 손가락: 확대 · 캐릭터를 눌러보세요</div>
+      <div class="night" id="night"></div>
+      <div class="hint3">드래그 회전 · 핀치 확대</div>
       <button class="modebtn sec" id="mode2d">2D 절전</button>
+      <button class="modebtn sec" id="topbtn" style="right:96px">🔭 탑뷰</button>
       <button class="expbtn" id="expbtn">🧪 실험하기<small id="clickval"></small></button>
       <div class="tip" id="tip" style="display:none"></div>
     </div>
+    <div class="card" id="alerts"></div>
     <div class="card" id="goal"></div>`;
   $("#mode2d").onclick=()=>setMode("2d");
+  let topOn=false; $("#topbtn").onclick=()=>{ topOn=!topOn; Lab3D.setTop(topOn); $("#topbtn").textContent=topOn?"🏠 기본뷰":"🔭 탑뷰"; };
   const exp=$("#expbtn");
   exp.addEventListener("pointerdown",ev=>{ ev.preventDefault(); Lab3D.jumpPI(); experiment(ev.clientX,ev.clientY); });
   Lab3D.onPI=(cx,cy)=>experiment(cx,cy);
-  Lab3D.onMate=(id,cx,cy)=>{ const r=ROLES[id]; showTip(`${r.name} ×${S.owned[id]} · 개당 +${fmt(D.per[id])}/초`,cx,cy); };
+  Lab3D.onMate=(cid)=>showCrew(cid);
+  Lab3D.onRepair=(id)=>{ if(doRepair(id)) refresh(); };
+  $("#alerts").addEventListener("click",e=>{ const b=e.target.closest("[data-fix]"); if(b) doRepair(b.dataset.fix); });
   Lab3D.attach($("#gl"));
-  Lab3D.sync({owned:S.owned,upg:S.upg,roles:ROLES,pi:PI});
+  syncLab();
   if(idea) placeIdea();
 }
+function syncLab(){ Lab3D.sync({crew:S.crew,upg:S.upg,roles:ROLES,pi:PI,broken:S.w.broken,dark:darkness()}); const n=$("#night"); if(n) n.style.opacity=(darkness()*.45).toFixed(2); }
 function viewLab(){
   if(mode3d() && window.Lab3D && Lab3D.init()){ viewLab3D(); return; }
   viewLab2D();
@@ -388,7 +410,7 @@ function buyCount(i){ return buyMode==="max" ? Math.max(1,maxAff(i)) : buyMode; 
 function buy(i){
   const k=buyCount(i), c=costFor(i,k);
   if(S.funds<c) return;
-  S.funds-=c; S.owned[i]+=k; derive();
+  S.funds-=c; S.owned[i]+=k; syncCrew(); derive();
   const newlyVisible = visibleRoles().length;
   if(tab==="hire" && $("#roles").children.length!==newlyVisible) viewHire();
   refresh(); save();
@@ -438,7 +460,7 @@ function viewPaper(){
   $("#pgo").onclick=()=>{
     const g=paperGain(); if(g<1) return;
     if(!confirm(`논문 ${g}편을 받고 연구실을 초기화합니다. 진행할까요?`)) return;
-    S.papers+=g; S.prestiges++; S.funds=0; S.total=0; S.owned=ROLES.map(()=>0); S.upg={};
+    S.papers+=g; S.prestiges++; S.funds=0; S.total=0; S.owned=ROLES.map(()=>0); S.upg={}; S.crew=[]; S.w.broken=[]; S.w.black=0; logEv("📄",`논문 ${g}편을 투고하고 연구실을 새로 시작합니다.`,"good");
     idea=null; derive(); save(); tab="lab"; render();
   };
 }
@@ -482,7 +504,7 @@ function viewSet(){
       const d=JSON.parse($("#btext").value.trim());
       if(!d||!Array.isArray(d.owned)||typeof d.funds!=="number") throw 0;
       if(!confirm("현재 진행 상황이 백업 내용으로 덮어써져요. 계속할까요?")) return;
-      localStorage.setItem(KEY,JSON.stringify(d)); S=load(); S.last=Date.now(); derive(); save(); render(); $("#bmsg").textContent="복원 완료!";
+      localStorage.setItem(KEY,JSON.stringify(d)); S=load(); S.last=Date.now(); syncCrew(true); derive(); save(); render(); $("#bmsg").textContent="복원 완료!";
     }catch(e){ msg("백업 형식이 올바르지 않아요."); }
   };
   $("#wipe").onclick=()=>{
@@ -495,9 +517,11 @@ function viewSet(){
 /* ====================== 갱신 ====================== */
 function refresh(){
   $("#fund").textContent = fmt(S.funds)+"원";
-  $("#cpsline").textContent = `초당 +${fmt(D.cps)}원`;
+  $("#cpsline").textContent = `초당 +${fmt(D.cps)}원 · ${clockText()}${S.crew.length?" "+moodFace(avgMood()):""}`;
+  if(tab==="crew") refreshCrew();
   if(tab==="lab"){
-    if($("#gl")) Lab3D.sync({owned:S.owned,upg:S.upg,roles:ROLES,pi:PI});
+    if($("#gl")) syncLab();
+    const al=$("#alerts"); if(al){ const h=(S.w.broken.length?S.w.broken.map(id=>`<div class="alert"><div class="grow">⚠ ${esc(equipName(id))} 고장</div><button data-fix="${id}" ${S.funds<repairCost()?"disabled":""}>🔧 수리 ${fmt(repairCost())}원</button></div>`).join(""):"")+S.w.log.slice(0,3).map(l=>`<div class="lg ${l.k}">${l.i} ${esc(l.x)}</div>`).join(""); if(al.dataset.h!==h){ al.innerHTML=h; al.dataset.h=h; al.style.display=h?"":"none"; } }
     const cv=$("#clickval"); if(cv) cv.textContent = `1회 +${fmt(D.click)}원`;
     const g=$("#goal"); if(g){
       const nxt = ROLES.find(r=>r.id===0||S.owned[r.id-1]>0 ? S.owned[r.id]===0 : false) || null;
@@ -534,6 +558,216 @@ function refresh(){
 }
 const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
 
+/* ====================== 콜로니 시스템 (림월드식) ====================== */
+const DAY=300;   // 게임 속 하루 = 현실 300초
+const SUR="김이박최정강조윤장임한오서신권황안송류홍".split("");
+const GIV=["민준","서연","지호","하은","도윤","수아","예준","지우","현우","유나","시우","서윤","준서","채원","건우","다은","태양","소율","지훈","하린","재민","나연","승현","예린"];
+const TRAITS={
+  dil:{n:"근면",d:"작업 효율 +15% · 피로가 더 빨리 쌓임"},
+  laz:{n:"게으름",d:"작업 효율 -10% · 피로가 천천히 쌓임"},
+  noc:{n:"야행성",d:"밤에 활발하고 낮에 졸려함"},
+  opt:{n:"낙천적",d:"기분 +8"},
+  sen:{n:"예민",d:"기분 -5 · 번아웃에 취약"},
+  fix:{n:"손재주",d:"고장난 장비를 스스로 수리"}
+};
+const JOBS={work:["🔬","연구 중"],eat:["🍙","식사 중"],sleep:["😴","휴식 중"],brk:["😵","번아웃"],wander:["🚶","휴식 중"],chat:["💬","대화 중"]};
+const EQ_IDS=["r0_1","r1_0","r1_1","r2_0","r2_1","r3_0","r3_1","r4_0","r5_0","r5_1","r6_0","r7_0"];
+let FACT=ROLES.map(()=>1);
+const rr=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+function hourNow(){ return ((S.w.clock%DAY)/DAY)*24; }
+function isNight(){ const h=hourNow(); return h<6||h>=21; }
+function darkness(){
+  const h=hourNow(); let d=0;
+  if(h<6) d=1; else if(h<8) d=1-(h-6)/2; else if(h<18) d=0; else if(h<21) d=(h-18)/3; else d=1;
+  if(S.w.black>0) d=Math.max(d,.9);
+  return d;
+}
+function clockText(){ const h=hourNow(), hh=Math.floor(h), mm=Math.floor((h-hh)*60); return `${isNight()?"🌙":"☀️"} ${Math.floor(S.w.clock/DAY)+1}일차 ${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`; }
+function logEv(i,x,k){
+  const h=hourNow(), hh=Math.floor(h), mm=Math.floor((h-hh)*60);
+  S.w.log.unshift({d:Math.floor(S.w.clock/DAY)+1,h:`${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`,i,x,k:k||""});
+  if(S.w.log.length>40) S.w.log.length=40;
+}
+function addThought(c,t,v,secs){
+  const u=S.w.clock+secs, ex=c.th.find(q=>q.t===t);
+  if(ex){ ex.v=v; ex.u=u; } else c.th.push({t,v,u});
+}
+function newCrew(role,quiet){
+  const pool=["dil","laz","noc","opt","sen","fix"], tr=[pick(pool)];
+  if(Math.random()<.5){ const b=pick(pool); if(!tr.includes(b) && !(tr[0]==="dil"&&b==="laz") && !(tr[0]==="laz"&&b==="dil")) tr.push(b); }
+  const nm=S.w.nextName||(pick(SUR)+pick(GIV)); S.w.nextName=null;
+  return {id:++S.cid,role,name:nm,tr,mood:72,en:rr(60,95),hu:rr(60,95),job:"work",jt:0,force:null,th:[]};
+}
+function wantCounts(){
+  const w=ROLES.map(()=>0); let left=20;
+  ROLES.forEach((r,i)=>{ const c=Math.min(S.owned[i],2,left); w[i]=c; left-=c; });
+  for(let i=ROLES.length-1;i>=0&&left>0;i--){ const c=Math.min(S.owned[i]-w[i],2,left); if(c>0){ w[i]+=c; left-=c; } }
+  return w;
+}
+function syncCrew(quiet){
+  const w=wantCounts();
+  ROLES.forEach((r,i)=>{
+    const mine=S.crew.filter(c=>c.role===i);
+    for(let k=mine.length;k<w[i];k++){
+      const c=newCrew(i); S.crew.push(c);
+      if(!quiet){ logEv("👋",`${c.name} (${r.name})이(가) 연구실에 합류했습니다.`,"good"); addThought(c,"새 동료",3,180); }
+    }
+    for(let k=mine.length;k>w[i];k--) S.crew.splice(S.crew.indexOf(mine[k-1]),1);
+  });
+}
+function traitMult(c){ return (c.tr.includes("dil")?1.15:1)*(c.tr.includes("laz")?.9:1); }
+function crewFactor(c){ return c.job==="work" ? (.6+.8*c.mood/100)*traitMult(c)*(c.force==="focus"?1.3:1) : 0; }
+function evMult(){ return (S.w.black>0?.5:1)*Math.max(.6,1-.1*S.w.broken.length); }
+function avgMood(){ return S.crew.length? S.crew.reduce((a,c)=>a+c.mood,0)/S.crew.length : 70; }
+function moodFace(m){ return m>=70?"😊":m>=45?"😐":m>=25?"😟":"😡"; }
+
+function decideJob(c,night,dt){
+  const noc=c.tr.includes("noc"), sleepy=noc?!night:night;
+  if(c.en<=0 && c.job!=="sleep"){ c.job="sleep"; c.force=null; addThought(c,"과로로 쓰러짐",-10,240); logEv("🚑",`${c.name}이(가) 과로로 쓰러졌습니다.`,"bad"); return; }
+  if(c.job==="chat"){
+    c.jt-=dt; const p=S.crew.find(x=>x.id===c.pid);
+    if(c.jt<=0||!p||p.job!=="chat"){
+      c.job="work"; c.pid=0;
+      if(c.kind==="spat"){ addThought(c,"말다툼",-5,240); } else addThought(c,"즐거운 대화",4,240);
+    }
+    return;
+  }
+  if(c.job==="sleep"){
+    const goal=c.force==="rest"?96:(sleepy?95:88);
+    if(c.en>=goal){ c.job="work"; addThought(c,"푹 쉬었다",8,360); if(c.force==="rest") c.force=null; }
+    return;
+  }
+  if(c.job==="eat"){
+    if(c.hu>=88){ c.job=(c.force==="rest"&&c.en<90)?"sleep":"work"; addThought(c,"식사 만족",5,240); }
+    return;
+  }
+  const brk=c.tr.includes("sen")?22:14;
+  if(c.mood<brk && Math.random()<dt*.35){
+    c.job="brk"; c.jt=40; c.force=null; logEv("😵",`${c.name}이(가) 번아웃에 빠졌습니다. 잠시 업무를 멈춥니다.`,"bad"); return;
+  }
+  if(c.force==="rest"){ c.job=c.hu<85?"eat":"sleep"; return; }
+  if(c.force==="focus"){ if(c.en<10){ c.force=null; addThought(c,"과로",-8,240); } else { c.job="work"; return; } }
+  if(c.hu<28){ c.job="eat"; return; }
+  if(c.en<(sleepy?55:18)){ c.job="sleep"; return; }
+  c.job="work";
+}
+function colonyStep(dt){
+  const w=S.w; w.clock+=dt; if(w.black>0){ w.black-=dt; if(w.black<=0){ w.black=0; logEv("💡","전력이 복구되었습니다.","good"); } }
+  const night=isNight(), now=w.clock, many=S.crew.length>=3;
+  for(const c of S.crew){
+    for(let i=c.th.length-1;i>=0;i--) if(c.th[i].u<now) c.th.splice(i,1);
+    if(c.job==="brk"){ c.jt-=dt; if(c.jt<=0){ c.job="work"; c.mood=Math.max(c.mood,35); addThought(c,"번아웃 후 멍함",-5,180); } }
+    else decideJob(c,night,dt);
+    const j=c.job, dil=c.tr.includes("dil"), laz=c.tr.includes("laz");
+    c.en+= (j==="work"?-.2*(dil?1.25:laz?.8:1):j==="eat"?-.04:j==="sleep"?.85:-.08)*dt;
+    c.hu+= (j==="work"?-.13:j==="eat"?2.6:j==="sleep"?-.04:-.1)*dt;
+    c.en=Math.max(0,Math.min(100,c.en)); c.hu=Math.max(0,Math.min(100,c.hu));
+    let target=22+.28*c.en+.28*c.hu+(c.tr.includes("opt")?8:0)-(c.tr.includes("sen")?5:0);
+    for(const t of c.th) target+=t.v;
+    if(w.black>0) target-=4; if(c.force==="focus") target-=4; if(c.job==="work"&&night&&!c.tr.includes("noc")) target-=4;
+    target=Math.max(0,Math.min(100,target));
+    c.mood+=(target-c.mood)*Math.min(1,dt*.35);
+  }
+  // 사회적 상호작용: 일하는 두 사람이 만나 수다를 떨거나 말다툼
+  w.socT-=dt;
+  if(w.socT<=0){
+    w.socT=rr(25,50);
+    const pool=S.crew.filter(c=>c.job==="work"&&!c.force);
+    if(pool.length>=2){
+      const a=pool.splice(Math.floor(Math.random()*pool.length),1)[0], b=pool[Math.floor(Math.random()*pool.length)];
+      const spat=(a.tr.includes("sen")||b.tr.includes("sen"))&&Math.random()<.35, kind=spat?"spat":"good", dur=rr(6,10);
+      a.job=b.job="chat"; a.pid=b.id; b.pid=a.id; a.kind=b.kind=kind; a.jt=b.jt=dur;
+      if(spat) logEv("💢",`${a.name}와(과) ${b.name}이(가) 말다툼을 했습니다.`,"bad"); else if(Math.random()<.2) logEv("💬",`${a.name}와(과) ${b.name}이(가) 즐겁게 수다를 떱니다.`,"good");
+    }
+  }
+  // 손재주 자동 수리
+  if(w.broken.length && S.crew.some(c=>c.tr.includes("fix")&&c.job==="work")){
+    w.fixT-=dt; if(w.fixT<=0){ w.fixT=40; const id=w.broken[0]; const who=S.crew.find(c=>c.tr.includes("fix")&&c.job==="work"); doRepair(id,true,who&&who.name); }
+  } else w.fixT=Math.max(w.fixT,25);
+  // 역할별 생산 계수
+  ROLES.forEach((r,i)=>{ const m=S.crew.filter(c=>c.role===i); const t=m.length? m.reduce((a,c)=>a+crewFactor(c),0)/m.length : 1; FACT[i]+=(t-FACT[i])*Math.min(1,dt*1.5); });
+  // 사건
+  w.evT-=dt; if(w.evT<=0){ w.evT=rr(100,200); fireEvent(); }
+}
+function equipName(id){ const u=UPG.find(x=>x.id===id); return u?u.name:id; }
+function repairCost(){ return Math.ceil(D.cps*15+D.click*5+30); }
+function doRepair(id,auto,who){
+  const i=S.w.broken.indexOf(id); if(i<0) return false;
+  if(!auto){ const c=repairCost(); if(S.funds<c){ toast("연구비가 부족해요"); return false; } S.funds-=c; }
+  S.w.broken.splice(i,1); derive();
+  logEv("🔧",auto?`${who||"연구원"}이(가) ${equipName(id)}을(를) 수리했습니다.`:`${equipName(id)} 수리 완료!`,"good");
+  S.crew.forEach(c=>addThought(c,"장비 수리 완료",3,150));
+  save(); if(tab==="lab"||tab==="crew") refresh(); return true;
+}
+let toastT=0;
+function toast(t){ const el=$("#toast"); if(!el) return; el.textContent=t; el.style.display="block"; clearTimeout(toastT); toastT=setTimeout(()=>{ el.style.display="none"; },1800); }
+const EVENTS=[
+ {w:3,ok:()=>EQ_IDS.some(id=>S.upg[id]&&!S.w.broken.includes(id))&&S.w.broken.length<3,run(){
+   const id=pick(EQ_IDS.filter(i=>S.upg[i]&&!S.w.broken.includes(i))); S.w.broken.push(id);
+   logEv("⚠️",`${equipName(id)}이(가) 고장났습니다! 수리하지 않으면 생산이 줄어요.`,"bad"); S.crew.forEach(c=>addThought(c,"장비 고장",-6,300)); derive(); }},
+ {w:2,ok:()=>D.cps>0,run(){ const v=D.cps*150+D.click*30+50; gain(v); logEv("💰",`교내 지원금 ${fmt(v)}원이 입금되었습니다.`,"good"); }},
+ {w:2,ok:()=>S.crew.length>=2,run(){ S.crew.forEach(c=>addThought(c,"간식 파티",10,300)); logEv("🎉","연구실 간식 파티! 모두의 기분이 좋아졌습니다.","good"); }},
+ {w:1.5,ok:()=>S.crew.length>=2,run(){ S.crew.forEach(c=>addThought(c,"행정 감사",-6,240)); logEv("📋","행정 감사가 있었습니다. 연구원들이 지쳐 보입니다.","bad"); }},
+ {w:1,ok:()=>S.crew.length>=1&&S.w.black<=0,run(){ S.w.black=25; logEv("🔌","정전! 25초 동안 생산이 절반으로 줄어듭니다.","bad"); }},
+ {w:1.5,ok:()=>S.owned.reduce((a,b)=>a+b,0)>=3&&!$("#modal").innerHTML,run(){
+   let mx=0; S.owned.forEach((n,i)=>{ if(n>0) mx=i; }); const role=Math.floor(Math.random()*(mx+1)), nm=pick(SUR)+pick(GIV);
+   logEv("🧑‍🔬",`객원 연구원 ${nm} (${ROLES[role].name})이(가) 합류를 희망합니다.`,"");
+   $("#modal").innerHTML=`<div class="modal"><div class="card"><h2>🧑‍🔬 객원 연구원 방문</h2><div class="sub"><b>${esc(nm)}</b> (${esc(ROLES[role].name)})이(가) 연구실에 합류하고 싶어 해요.<br>무료로 영입할 수 있어요.</div>
+     <div class="row" style="border:0;gap:8px"><button class="grow" id="vyes">받아들인다</button><button class="grow sec" id="vno">거절한다</button></div></div></div>`;
+   $("#vyes").onclick=()=>{ S.owned[role]++; S.w.nextName=nm; derive(); syncCrew(); $("#modal").innerHTML=""; save(); refresh(); };
+   $("#vno").onclick=()=>{ $("#modal").innerHTML=""; logEv("🚪",`${nm}의 합류 제안을 정중히 거절했습니다.`,""); };
+ }}
+];
+function fireEvent(){
+  const ok=EVENTS.filter(e=>e.ok()); if(!ok.length) return;
+  let t=ok.reduce((a,e)=>a+e.w,0)*Math.random(); for(const e of ok){ t-=e.w; if(t<=0){ e.run(); return; } }
+  ok[0].run();
+}
+
+/* ---- 연구원 화면 ---- */
+const moodColor=m=>m>=60?"#16a34a":m>=35?"#f59e0b":"#dc2626";
+const bar=(v,c)=>`<div class="mbar"><i style="width:${Math.round(v)}%;background:${c}"></i></div>`;
+function jobText(c){ const j=JOBS[c.job]||JOBS.work; return `${j[0]} ${j[1]}${c.force==="rest"?" (휴식 지시)":c.force==="focus"?" (연구 집중)":""}`; }
+let crewSig="", crewSec=-1, openCrewId=0;
+function viewCrew(){
+  $("#app").innerHTML=`
+    <div class="card"><h2>👥 연구원 <span id="cn"></span></h2><div class="sub">연구원은 스스로 일하고, 먹고, 쉬어요. 이름을 눌러 지시를 내려보세요. 기분이 낮으면 번아웃에 빠질 수 있어요.</div><div id="cl"></div></div>
+    <div class="card"><h2>📜 연구실 일지</h2><div id="lg"></div></div>`;
+  $("#cl").addEventListener("click",e=>{ const r=e.target.closest("[data-c]"); if(r) showCrew(+r.dataset.c); });
+  crewSec=-1; refreshCrew();
+}
+function refreshCrew(){
+  const sec=Math.floor(S.w.clock); if(sec===crewSec) return; crewSec=sec;
+  const cl=$("#cl"); if(!cl) return;
+  $("#cn").textContent=`(${S.crew.length}명 · 평균 기분 ${moodFace(avgMood())} ${Math.round(avgMood())})`;
+  cl.innerHTML=S.crew.length? S.crew.map(c=>`<div class="row" data-c="${c.id}" style="cursor:pointer"><div class="av">${avatar(ROLES[c.role])}</div>
+     <div class="grow"><div class="rn">${esc(c.name)}<span class="pill">${esc(ROLES[c.role].name)}</span></div>
+     <div class="sub">${jobText(c)} · ${c.tr.map(t=>TRAITS[t].n).join("·")}</div>${bar(c.mood,moodColor(c.mood))}</div><div class="sub" style="width:34px;text-align:right">${moodFace(c.mood)}</div></div>`).join("")
+     : `<div class="empty">아직 연구원이 없어요.<br>인력 탭에서 연구생을 뽑아보세요!</div>`;
+  const lg=$("#lg"); if(lg) lg.innerHTML=S.w.log.length? S.w.log.slice(0,25).map(l=>`<div class="lg ${l.k}"><span class="sub">${l.d}일차 ${l.h}</span> ${l.i} ${esc(l.x)}</div>`).join("") : `<div class="empty">아직 기록이 없어요.</div>`;
+}
+function showCrew(id){
+  const c=S.crew.find(x=>x.id===id); if(!c){ openCrewId=0; $("#modal").innerHTML=""; return; }
+  openCrewId=id; const r=ROLES[c.role];
+  $("#modal").innerHTML=`<div class="modal" id="cm"><div class="card" style="text-align:left">
+    <div class="row" style="border:0;padding-top:0"><div class="av" style="width:56px">${avatar(r)}</div><div class="grow"><div class="rn" style="font-size:18px">${esc(c.name)}</div><div class="sub">${esc(r.name)} · ${jobText(c)}</div></div></div>
+    <div class="sub" style="margin-bottom:4px">${c.tr.map(t=>`<b>${TRAITS[t].n}</b> ${TRAITS[t].d}`).join("<br>")}</div>
+    <div class="nd"><span>기분 ${moodFace(c.mood)}</span>${bar(c.mood,moodColor(c.mood))}<b>${Math.round(c.mood)}</b></div>
+    <div class="nd"><span>피로(체력)</span>${bar(c.en,moodColor(c.en))}<b>${Math.round(c.en)}</b></div>
+    <div class="nd"><span>허기(포만)</span>${bar(c.hu,moodColor(c.hu))}<b>${Math.round(c.hu)}</b></div>
+    <div class="sub" style="margin:8px 0 2px"><b>생각</b></div>
+    <div class="sub">${c.th.length? c.th.map(t=>`${t.v>0?"🙂":"🙁"} ${esc(t.t)} (${t.v>0?"+":""}${t.v})`).join("<br>") : "특별한 생각 없음"}</div>
+    <div class="row" style="border:0;gap:6px;margin-top:10px"><button class="grow sec" id="crest">😴 휴식 지시</button><button class="grow sec" id="cfocus">🔬 연구 집중</button></div>
+    <div class="row" style="border:0;gap:6px;padding-top:0">${c.force?`<button class="grow sec" id="cfree">지시 해제</button>`:""}<button class="grow" id="cclose">닫기</button></div></div></div>`;
+  $("#cclose").onclick=()=>{ openCrewId=0; $("#modal").innerHTML=""; };
+  $("#cm").addEventListener("pointerdown",e=>{ if(e.target.id==="cm"){ openCrewId=0; $("#modal").innerHTML=""; } });
+  $("#crest").onclick=()=>{ c.force="rest"; c.job=c.hu<85?"eat":"sleep"; logEv("🛏️",`${c.name}에게 휴식을 지시했습니다.`,""); showCrew(id); };
+  $("#cfocus").onclick=()=>{ if(c.job==="brk"){ toast("번아웃 중엔 지시할 수 없어요"); return; } c.force="focus"; if(c.job!=="work") c.job="work"; logEv("🔬",`${c.name}에게 연구 집중을 지시했습니다.`,""); showCrew(id); };
+  const f=$("#cfree"); if(f) f.onclick=()=>{ c.force=null; showCrew(id); };
+}
+
 /* ====================== 시간 진행 ====================== */
 function showOffline(sec, earned){
   $("#modal").innerHTML = `<div class="modal"><div class="card">
@@ -549,10 +783,13 @@ function tick(){
   S.last=now;
   if(dt<0 || !isFinite(dt)) dt=0;
   if(dt>=30){
-    const eff=Math.min(dt,OFFLINE_CAP), earned=D.cps*eff;
+    const eff=Math.min(dt,OFFLINE_CAP); FACT=FACT.map(()=>.85); derive(); const earned=D.cps*eff;
+    S.w.clock+=Math.min(dt,3600); S.crew.forEach(c=>{ c.en=Math.min(100,c.en+40); c.hu=Math.max(35,c.hu); c.job="work"; c.th=[]; c.mood=Math.max(c.mood,60); }); S.w.black=0;
     if(earned>0){ gain(earned); showOffline(dt,earned); }
   } else if(dt>0){
     gain(D.cps*dt);
+    colonyStep(dt); if(++dTick%5===0) derive();
+    if(openCrewId && Math.floor(S.w.clock)!==modalSec){ modalSec=Math.floor(S.w.clock); if($("#cm")) showCrew(openCrewId); else openCrewId=0; }
   }
   // 연구 아이디어
   if(idea && now>idea.until){ idea=null; const b=$("#ideaBtn"); if(b) b.remove(); nextIdea=now+(50+Math.random()*70)*1000; }
@@ -562,12 +799,13 @@ function tick(){
   }
   refresh();
 }
-let saveN=0;
+let saveN=0, dTick=0, modalSec=0;
 setInterval(()=>{ tick(); if(++saveN%50===0) save(); },100);
 document.addEventListener("visibilitychange",()=>{ if(document.hidden){ save(); } else { tick(); } });
 window.addEventListener("pagehide",save);
 
 /* ====================== 시작 ====================== */
+syncCrew(true); if(!S.w.log.length) logEv("🏠","HOPE 연구소가 문을 열었습니다. 연구원을 뽑아 연구실을 키워보세요!","good");
 derive();
 render();
 // 앱을 다시 열었을 때의 오프라인 정산은 첫 tick 에서 처리됩니다.

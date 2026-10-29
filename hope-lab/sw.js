@@ -1,5 +1,5 @@
 // 오프라인 사용을 위한 서비스 워커. 게임을 수정하면 VERSION 값을 올려주세요.
-const VERSION = "hopelab-v2";
+const VERSION = "hopelab-v4";
 const FILES = [
   "./",
   "./index.html",
